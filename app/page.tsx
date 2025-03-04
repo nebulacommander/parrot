@@ -57,7 +57,7 @@ export default function Home() {
 		function keyDown(e: KeyboardEvent) {
 			if (e.key === "Enter") return inputRef.current?.focus();
 			if (e.key === "Escape") return setInput("");
-			if (e.key === "t" && e.ctrlKey) {
+			if (e.key === "z" && e.ctrlKey) {
 				e.preventDefault();
 				setShowThinking(prev => !prev);
 			}
@@ -256,7 +256,7 @@ export default function Home() {
 						)}
 						
 						<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-500">
-							Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+T</kbd> to toggle thinking display
+							Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+L</kbd> to toggle thinking display
 						</p>
 					</div>
 				)}

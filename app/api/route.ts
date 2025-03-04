@@ -97,7 +97,7 @@ export async function POST(request: Request) {
 		const voice = await fetch("https://api.cartesia.ai/tts/bytes", {
 			method: "POST",
 			headers: {
-				"Cartesia-Version": "2024-06-30",
+				"Cartesia-Version": "2024-06-10",
 				"Content-Type": "application/json",
 				"X-API-Key": process.env.CARTESIA_API_KEY!,
 			},
