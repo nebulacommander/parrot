@@ -7,6 +7,7 @@ import { EnterIcon, LoadingIcon } from "@/lib/icons";
 import { usePlayer } from "@/lib/usePlayer";
 import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
+import { CodeBlock } from "./components/ui";
 
 type Message = {
 	role: "user" | "assistant";
@@ -14,6 +15,42 @@ type Message = {
 	thinking?: string;
 	latency?: number;
 };
+
+function parseResponse(content: string) {
+	const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+	const parts = [];
+	let lastIndex = 0;
+	let match;
+
+	while ((match = codeBlockRegex.exec(content)) !== null) {
+		// Add text before code block
+		if (match.index > lastIndex) {
+			parts.push({
+				type: 'text',
+				content: content.slice(lastIndex, match.index)
+			});
+		}
+
+		// Add code block
+		parts.push({
+			type: 'code',
+			language: match[1] || 'text',
+			content: match[2].trim()
+		});
+
+		lastIndex = match.index + match[0].length;
+	}
+
+	// Add remaining text
+	if (lastIndex < content.length) {
+		parts.push({
+			type: 'text',
+			content: content.slice(lastIndex)
+		});
+	}
+
+	return parts;
+}
 
 export default function Home() {
 	const [input, setInput] = useState("");
@@ -111,8 +148,8 @@ export default function Home() {
 			const text = decodeURIComponent(
 				response.headers.get("X-Response") || ""
 			);
-			const thinking = response.headers.get("X-Thinking") 
-				? decodeURIComponent(response.headers.get("X-Thinking") || "") 
+			const thinking = response.headers.get("X-Thinking")
+				? decodeURIComponent(response.headers.get("X-Thinking") || "")
 				: undefined;
 
 			if (!transcript || !text) {
@@ -197,7 +234,7 @@ export default function Home() {
 								<div className="flex items-center mb-2">
 									<div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
 									<h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
-									<button 
+									<button
 										onClick={() => setShowThinking(false)}
 										className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
 									>
@@ -209,20 +246,30 @@ export default function Home() {
 								</p>
 							</div>
 						)}
-						
+
 						<div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
-							<p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-line">
-								{lastAssistantMessage?.content}
-							</p>
+							<div className="text-neutral-800 dark:text-neutral-200">
+								{lastAssistantMessage?.content && parseResponse(lastAssistantMessage.content).map((part, i) => (
+									part.type === 'code' ? (
+										<CodeBlock
+											key={i}
+											language={part.language || 'text'}
+											code={part.content}
+										/>
+									) : (
+										<p key={i} className="whitespace-pre-line">{part.content}</p>
+									)
+								))}
+							</div>
 							{lastAssistantMessage?.latency && (
 								<span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
 									Response time: {lastAssistantMessage.latency}ms
 								</span>
 							)}
 						</div>
-						
+
 						{!showThinking && lastAssistantMessage?.thinking && (
-							<button 
+							<button
 								onClick={() => setShowThinking(true)}
 								className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
 							>
@@ -254,7 +301,7 @@ export default function Home() {
 						) : (
 							<p className="mt-4 text-neutral-600 dark:text-neutral-400">Start talking or type a question to chat.</p>
 						)}
-						
+
 						<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-500">
 							Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+L</kbd> to toggle thinking display
 						</p>

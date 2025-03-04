@@ -1,10 +1,36 @@
 import React from 'react';
 import clsx from 'clsx';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-jsx';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
+}
+
+interface CodeBlockProps {
+  language: string;
+  code: string;
+}
+
+export function CodeBlock({ language, code }: CodeBlockProps) {
+  const highlighted = Prism.highlight(
+    code,
+    Prism.languages[language] || Prism.languages.text,
+    language
+  );
+
+  return (
+    <pre className="rounded-md bg-neutral-900 p-4 overflow-x-auto">
+      <code 
+        className={`language-${language}`}
+        dangerouslySetInnerHTML={{ __html: highlighted }}
+      />
+    </pre>
+  );
 }
 
 export function Button({
