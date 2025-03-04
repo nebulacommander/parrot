@@ -1,6 +1,8 @@
 import { marked } from 'marked';
 import type { Token, Tokens } from 'marked';
 import { CodeBlock } from './ui';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 interface MarkdownProps {
   content: string;
@@ -11,9 +13,50 @@ export function Markdown({ content }: MarkdownProps) {
   
   // Custom code block renderer to use our Prism-powered CodeBlock
   renderer.code = ({ text, lang, escaped }) => {
+    if (lang === 'math' || text.match(MATH_PATTERNS.block)) {
+      try {
+        return `<div class="math-block my-4 flex justify-center overflow-x-auto">
+          ${katex.renderToString(text, {
+            displayMode: true,
+            throwOnError: false,
+            strict: false,
+            trust: true,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\boxed": "\\bbox[border: 1px solid]{#1}",
+              "\\abs": "\\left|#1\\right|",
+              "\\norm": "\\left\\|#1\\right\\|",
+              "\\deriv": "\\frac{d}{d#1}",
+              "\\partderiv": "\\frac{\\partial}{\\partial #1}"
+            }
+          })}</div>`;
+      } catch (error) {
+        console.error('KaTeX error:', error);
+        return `<pre class="text-red-500">Error rendering math: ${(error as Error).message}</pre>`;
+      }
+    }
     return `<div class="my-4">
       ${CodeBlock({ code: text, language: lang || 'text' })}
     </div>`;
+  }
+
+  // Add inline math renderer
+  const oldInlineCode = renderer.codespan;
+  renderer.codespan = ({ text }: { text: string }) => {
+    if (typeof text === 'string' && text.startsWith('$') && text.endsWith('$')) {
+      try {
+        return katex.renderToString(text.slice(1, -1), {
+          displayMode: false,
+          throwOnError: false
+        });
+      } catch (error) {
+        console.error('KaTeX error:', error);
+        return `<span class="text-red-500">Error: ${(error as Error).message}</span>`;
+      }
+    }
+    return oldInlineCode.call(renderer, { text, type: 'codespan', raw: `\`${text}\`` });
   };
 
   // Fix table cell rendering
@@ -60,6 +103,44 @@ export function Markdown({ content }: MarkdownProps) {
     `;
   };
 
+  // Add these math-specific regex patterns
+  const MATH_PATTERNS = {
+    inline: /\$([^\$]+)\$/g,
+    block: /\$\$([^$]+)\$\$/g,
+    latex: /\\[a-zA-Z]+\{[^}]+\}/g,
+  };
+
+  // Enhanced inline math handling
+  renderer.text = (token: Tokens.Escape | Tokens.Text) => {
+    let text = token.text;
+    // Handle inline math with $ signs
+    text = text.replace(MATH_PATTERNS.inline, (match, latex) => {
+      try {
+        return katex.renderToString(latex, {
+          displayMode: false,
+          throwOnError: false,
+          strict: false
+        });
+      } catch (error) {
+        console.error('KaTeX inline error:', error);
+        return match;
+      }
+    });
+
+    // Handle LaTeX commands outside math mode
+    text = text.replace(MATH_PATTERNS.latex, (match) => {
+      try {
+        return katex.renderToString(match, {
+          displayMode: false,
+          throwOnError: false
+        });
+      } catch (error) {
+        return match;
+      }
+    });
+
+    return text;
+  };
 
   // Custom heading renderer with proper spacing and sizing  
   renderer.heading = ({ tokens, depth }) => {
@@ -88,7 +169,7 @@ export function Markdown({ content }: MarkdownProps) {
 
   return (
     <div 
-      className="prose dark:prose-invert max-w-none"
+      className="prose dark:prose-invert max-w-none math-content"
       dangerouslySetInnerHTML={{ __html: marked(content) }} 
     />
   );

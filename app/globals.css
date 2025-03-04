@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 @import 'prismjs/themes/prism-tomorrow.css';
+@import 'katex/dist/katex.min.css';
+
+/* Add custom styles for math content */
+.math-content {
+  .katex-display {
+    @apply overflow-x-auto;
+    @apply py-4;
+  }
+  
+  .katex {
+    @apply text-lg;
+  }
+}
+
+/* Enhanced math styling */
+.math-content {
+  .katex-display {
+    @apply overflow-x-auto py-4;
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+  
+  .katex {
+    @apply text-lg;
+    font-size: 1.1em !important;
+  }
+
+  .math-block {
+    @apply my-6 px-4;
+    @apply bg-neutral-50 dark:bg-neutral-900;
+    @apply rounded-lg border border-neutral-200 dark:border-neutral-800;
+  }
+
+  .katex-html {
+    @apply select-all;
+  }
+}
+
+/* Custom scrollbar for math overflow */
+.math-content::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.math-content::-webkit-scrollbar-track {
+  @apply bg-neutral-200 dark:bg-neutral-800;
+}
+
+.math-content::-webkit-scrollbar-thumb {
+  @apply bg-neutral-400 dark:bg-neutral-600;
+  border-radius: 2px;
+}
 
 @layer base {
   :root {

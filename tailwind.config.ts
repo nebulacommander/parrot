@@ -61,7 +61,28 @@ const config: Config = {
 					  },
 					  'tr:last-child': {
 						borderBottom: 'none',
-					}
+					},
+					'.katex': {
+              fontSize: '1.1em',
+            },
+            '.katex-display': {
+              margin: '1.5em 0',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+            },
+            '.math-content': {
+              'overflow-x': 'auto',
+              'max-width': '100%',
+            },
+            // Improve math block spacing
+            'div.math-block': {
+              margin: '1.5em 0',
+              padding: '0.5em 0',
+            },
+            // Inline math styling
+            '.math-inline': {
+              padding: '0.2em 0.1em',
+            }
 				}
 			  }	
 			},
