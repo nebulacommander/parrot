@@ -43,7 +43,25 @@ const config: Config = {
 						borderRadius: '0.25rem',
 						fontWeight: '400',
 					},
-                     
+                    table: {
+						width: '100%',
+					  },
+					  'th,td': {
+						padding: '0.75rem',
+						borderColor: 'var(--border)',
+					  },
+					  th: {
+						backgroundColor: 'var(--muted)',
+						color: 'var(--muted-foreground)',
+						fontWeight: '600',
+						textAlign: 'left',
+					  },
+					  tr: {
+						borderBottom: '1px solid var(--border)',
+					  },
+					  'tr:last-child': {
+						borderBottom: 'none',
+					}
 				}
 			  }	
 			},
