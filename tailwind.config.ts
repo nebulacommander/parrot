@@ -1,11 +1,52 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
 
 const config: Config = {
     darkMode: ["class"],
     content: ["./app/**/*.{js,ts,jsx,tsx,mdx}"],
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		typography
+	],
 	theme: {
     	extend: {
+			typography: {
+			  DEFAULT: {
+				css: {
+					'code::before': {
+						content: '""',
+					},
+					'code::after': {
+						content: '""',
+					},
+					'pre code::before': {
+						content: '""',
+					},
+					'pre code::after': {
+						content: '""',
+					},
+					'pre': {
+						'overflow-x': 'auto',
+						'border-radius': 'var(--radius)',
+						'padding': '1rem',
+						'background-color': 'var(--card)',
+						'color': 'var(--card-foreground)',
+						'border': '1px solid var(--border)',
+					},
+					'pre code': {
+						'font-family': 'var(--font-geist-mono)',
+						'font-size': '0.875rem',
+					},
+					code: {
+						backgroundColor: 'hsl(var(--muted))',
+						padding: '0.25rem',
+						borderRadius: '0.25rem',
+						fontWeight: '400',
+					},
+                     
+				}
+			  }	
+			},
     		colors: {
     			neutral: {
     				'200': '#F0F0F0',

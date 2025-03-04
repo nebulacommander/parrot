@@ -8,6 +8,10 @@ import { usePlayer } from "@/lib/usePlayer";
 import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { CodeBlock } from "./components/ui";
+import { Markdown } from '@/components/markdown';
+
+// Replace the existing parseResponse rendering with:
+
 
 type Message = {
 	role: "user" | "assistant";
@@ -249,17 +253,9 @@ export default function Home() {
 
 						<div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
 							<div className="text-neutral-800 dark:text-neutral-200">
-								{lastAssistantMessage?.content && parseResponse(lastAssistantMessage.content).map((part, i) => (
-									part.type === 'code' ? (
-										<CodeBlock
-											key={i}
-											language={part.language || 'text'}
-											code={part.content}
-										/>
-									) : (
-										<p key={i} className="whitespace-pre-line">{part.content}</p>
-									)
-								))}
+							{lastAssistantMessage?.content && (
+  <Markdown content={lastAssistantMessage.content} />
+)}
 							</div>
 							{lastAssistantMessage?.latency && (
 								<span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
