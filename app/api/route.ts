@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
 	try {
 		const completion = await groq.chat.completions.create({
-			model: "deepseek-r1-distill-qwen-32b", // Changed from llama-3.2-90b-vision-preview to Deepseek model
+			model: "deepseek-r1-distill-qwen-70b", // Changed from llama-3.2-90b-vision-preview to Deepseek model
 			messages: [
 				{
 					role: "system",
