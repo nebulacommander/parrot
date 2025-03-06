@@ -71,7 +71,7 @@ export default function SignInPage() {
               label: "Continue with Microsoft",
               strategy: "oauth_microsoft",
             },
-          ].map((provider, i) => (
+          ].map((provider) => (
             <OAuthButton
               key={provider.strategy}
               icon={provider.icon}
@@ -89,7 +89,7 @@ export default function SignInPage() {
           className="text-center space-y-4"
         >
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/sign-up"
               className="text-primary hover:text-primary/90 font-medium transition-colors"
