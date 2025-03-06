@@ -7,11 +7,11 @@ import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
-	title: "Swift Enterprise AI Assistant",
+	title: "parrot Enterprise AI Assistant",
 	description:
 		"An enterprise-grade voice assistant powered by Deepseek, Groq, Cartesia, and Vercel.",
 	authors: [{ name: "Godwin" }],
-	keywords: ["AI", "voice assistant", "Deepseek", "enterprise", "Swift"],
+	keywords: ["AI", "voice assistant", "Deepseek", "enterprise", "parrot"],
 	viewport: "width=device-width, initial-scale=1",
 	manifest: "/manifest.json",
 	icons: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 	},
 	openGraph: {
 		type: "website",
-		title: "Swift Enterprise AI Assistant",
+		title: "parrot Enterprise AI Assistant",
 		description: "An enterprise-grade voice assistant with thinking capabilities",
 		url: "/",
 		images: [{ url: "/og-image.png" }],

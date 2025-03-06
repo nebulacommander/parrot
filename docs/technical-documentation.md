@@ -1,7 +1,7 @@
-# Swift Voice Assistant Technical Documentation
+# parrot Voice Assistant Technical Documentation
 
 ## Overview
-Swift is an advanced voice assistant application that combines real-time speech processing with AI-powered responses. The application leverages cutting-edge technologies including Groq for AI processing, Cartesia for enhancement, and Voice Activity Detection (VAD) for speech recognition.
+parrot is an advanced voice assistant application that combines real-time speech processing with AI-powered responses. The application leverages cutting-edge technologies including Groq for AI processing, Cartesia for enhancement, and Voice Activity Detection (VAD) for speech recognition.
 
 ## Technical Architecture
 

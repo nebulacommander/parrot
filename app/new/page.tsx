@@ -7,8 +7,9 @@ import { EnterIcon, LoadingIcon } from "@/lib/icons";
 import { usePlayer } from "@/lib/usePlayer";
 import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
-import { CodeBlock } from "./components/ui";
+import { CodeBlock } from "../components/ui";
 import { Markdown } from '@/components/markdown';
+import { HelpMenu } from '../components/ui/help-menu';
 
 // Replace the existing parseResponse rendering with:
 
@@ -20,41 +21,48 @@ type Message = {
 	latency?: number;
 };
 
-function parseResponse(content: string) {
-	const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+function parseResponse(content: string): Array<{type: string, content: string, language?: string}> {
 	const parts = [];
-	let lastIndex = 0;
-	let match;
-
-	while ((match = codeBlockRegex.exec(content)) !== null) {
-		// Add text before code block
-		if (match.index > lastIndex) {
-			parts.push({
-				type: 'text',
-				content: content.slice(lastIndex, match.index)
-			});
+	let currentText = '';
+	const lines = content.split('\n');
+	
+	for (let i = 0; i < lines.length; i++) {
+	  const line = lines[i];
+	  const codeMatch = line.match(/^```(\w+)?$/);
+	  
+	  if (codeMatch) {
+		// If we have accumulated text, add it
+		if (currentText) {
+		  parts.push({ type: 'text', content: currentText.trim() });
+		  currentText = '';
 		}
-
-		// Add code block
+		
+		// Collect the code block
+		const language = codeMatch[1];
+		let code = '';
+		i++;
+		while (i < lines.length && !lines[i].startsWith('```')) {
+		  code += lines[i] + '\n';
+		  i++;
+		}
+		
 		parts.push({
-			type: 'code',
-			language: match[1] || 'text',
-			content: match[2].trim()
+		  type: 'code',
+		  language: language || 'text',
+		  content: code.trim()
 		});
-
-		lastIndex = match.index + match[0].length;
+	  } else {
+		currentText += line + '\n';
+	  }
 	}
-
-	// Add remaining text
-	if (lastIndex < content.length) {
-		parts.push({
-			type: 'text',
-			content: content.slice(lastIndex)
-		});
+	
+	// Add any remaining text
+	if (currentText) {
+	  parts.push({ type: 'text', content: currentText.trim() });
 	}
-
+	
 	return parts;
-}
+  }
 
 export default function Home() {
 	const [input, setInput] = useState("");
@@ -200,7 +208,7 @@ export default function Home() {
 	return (
 		<>
 			<div className="pb-4 min-h-28">
-				<h1 className="text-2xl font-bold text-center mb-2">Swift</h1>
+				<h1 className="text-2xl font-bold text-center mb-2">Parrot</h1>
 				<p className="text-neutral-500 dark:text-neutral-400 text-center">
 					Powered by Deepseek AI + Groq
 				</p>
@@ -316,6 +324,13 @@ export default function Home() {
 					}
 				)}
 			/>
+			<footer className="mt-8 mb-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
+				<p>
+					Parrot is powered by AI • Double check response
+				</p>
+			</footer>
+			
+			<HelpMenu />
 		</>
 	);
 }

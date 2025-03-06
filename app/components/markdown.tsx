@@ -1,8 +1,10 @@
 import { marked } from 'marked';
-import type { Token, Tokens } from 'marked';
+import type { Token } from 'marked';
+import type { Tokens } from 'marked';
 import { CodeBlock } from './ui';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { preprocessMath } from './preprocessMath';
 
 interface MarkdownProps {
   content: string;
@@ -11,36 +13,28 @@ interface MarkdownProps {
 export function Markdown({ content }: MarkdownProps) {
   const renderer = new marked.Renderer();
   
-  // Custom code block renderer to use our Prism-powered CodeBlock
-  renderer.code = ({ text, lang, escaped }) => {
-    if (lang === 'math' || text.match(MATH_PATTERNS.block)) {
-      try {
-        return `<div class="math-block my-4 flex justify-center overflow-x-auto">
-          ${katex.renderToString(text, {
-            displayMode: true,
-            throwOnError: false,
-            strict: false,
-            trust: true,
-            macros: {
-              "\\RR": "\\mathbb{R}",
-              "\\NN": "\\mathbb{N}",
-              "\\ZZ": "\\mathbb{Z}",
-              "\\boxed": "\\bbox[border: 1px solid]{#1}",
-              "\\abs": "\\left|#1\\right|",
-              "\\norm": "\\left\\|#1\\right\\|",
-              "\\deriv": "\\frac{d}{d#1}",
-              "\\partderiv": "\\frac{\\partial}{\\partial #1}"
-            }
-          })}</div>`;
-      } catch (error) {
-        console.error('KaTeX error:', error);
-        return `<pre class="text-red-500">Error rendering math: ${(error as Error).message}</pre>`;
-      }
-    }
-    return `<div class="my-4">
-      ${CodeBlock({ code: text, language: lang || 'text' })}
+  const CODE_BLOCK_REGEX = /^```(\w+)?\n([\s\S]*?)```$/;
+renderer.code = ({ text, lang }) => {
+  // Special case for math blocks
+  if (lang === 'math') {
+    const humanReadable = preprocessMath(text);
+    return `<div class="math-block my-4 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      ${humanReadable}
     </div>`;
   }
+
+  return `<div class="code-block-wrapper">
+    <CodeBlock language="${lang || 'text'}" code="${text.replace(/"/g, '&quot;')}" />
+  </div>`;
+};
+
+// Add enhanced text processing
+renderer.text = (text) => {
+  return preprocessMath(text.text)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+};
 
   // Add inline math renderer
   const oldInlineCode = renderer.codespan;
@@ -103,6 +97,28 @@ export function Markdown({ content }: MarkdownProps) {
     `;
   };
 
+  function renderMathExpression(text: string, displayMode = false): string {
+    try {
+      // Process the expression for human-readable output
+      const processed = preprocessMath(text);
+      
+      // For display mode, wrap in a styled div
+      if (displayMode) {
+        return `
+          <div class="math-block bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg">
+            ${processed}
+          </div>
+        `;
+      }
+      
+      // For inline mode, wrap in a styled span
+      return `<span class="math-inline">${processed}</span>`;
+    } catch (error) {
+      console.error('Math rendering error:', error);
+      return `<span class="text-red-500">${text}</span>`;
+    }
+  }
+
   // Add these math-specific regex patterns
   const MATH_PATTERNS = {
     inline: /\$([^\$]+)\$/g,
@@ -111,34 +127,19 @@ export function Markdown({ content }: MarkdownProps) {
   };
 
   // Enhanced inline math handling
-  renderer.text = (token: Tokens.Escape | Tokens.Text) => {
+  renderer.text = (token: Tokens.Text) => {
     let text = token.text;
-    // Handle inline math with $ signs
-    text = text.replace(MATH_PATTERNS.inline, (match, latex) => {
-      try {
-        return katex.renderToString(latex, {
-          displayMode: false,
-          throwOnError: false,
-          strict: false
-        });
-      } catch (error) {
-        console.error('KaTeX inline error:', error);
-        return match;
-      }
+    
+    // Handle math expressions
+    text = text.replace(/\$([^$]+)\$/g, (_, math) => {
+      return renderMathExpression(math, false);
     });
-
-    // Handle LaTeX commands outside math mode
-    text = text.replace(MATH_PATTERNS.latex, (match) => {
-      try {
-        return katex.renderToString(match, {
-          displayMode: false,
-          throwOnError: false
-        });
-      } catch (error) {
-        return match;
-      }
+    
+    // Handle display math
+    text = text.replace(/\$\$([^$]+)\$\$/g, (_, math) => {
+      return renderMathExpression(math, true);
     });
-
+  
     return text;
   };
 
@@ -169,7 +170,7 @@ export function Markdown({ content }: MarkdownProps) {
 
   return (
     <div 
-      className="prose dark:prose-invert max-w-none math-content"
+      className="prose dark:prose-invert max-w-none math-content select-text"
       dangerouslySetInnerHTML={{ __html: marked(content) }} 
     />
   );

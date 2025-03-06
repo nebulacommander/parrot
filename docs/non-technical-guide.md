@@ -1,13 +1,13 @@
-# Swift Voice Assistant: User Guide
+# parrot Voice Assistant: User Guide
 
-## What is Swift?
+## What is parrot?
 
-Swift is a modern voice assistant that helps you get quick answers to your questions. Think of it like having a knowledgeable friend who can listen to you speak or read your typed messages and respond intelligently.
+parrot is a modern voice assistant that helps you get quick answers to your questions. Think of it like having a knowledgeable friend who can listen to you speak or read your typed messages and respond intelligently.
 
 ## Key Features
 
 ### 1. Two Ways to Communicate
-- **Voice Chat**: Just start speaking, and Swift will listen
+- **Voice Chat**: Just start speaking, and parrot will listen
 - **Text Chat**: Type your questions if you prefer writing
 
 ### 2. Smart Responses
@@ -20,16 +20,16 @@ Swift is a modern voice assistant that helps you get quick answers to your quest
 - Works in your web browser
 - No installation needed
 
-## How to Use Swift
+## How to Use parrot
 
 ### Getting Started
-1. Open Swift in your web browser
+1. Open parrot in your web browser
 2. Wait for the "Loading speech detection..." message to disappear
 3. Start talking or type your question
 
 ### Voice Commands
 1. Just start speaking - the blue circle will glow when you're being heard
-2. Stop speaking when you're done - Swift will automatically process your question
+2. Stop speaking when you're done - parrot will automatically process your question
 3. Wait for the response (both written and spoken)
 
 ### Typing Questions
@@ -48,11 +48,11 @@ Swift is a modern voice assistant that helps you get quick answers to your quest
 ### Main Screen Elements
 1. **Input Box**: Where you type questions
 2. **Blue Circle**: Shows when the system is listening
-3. **Thinking Display**: Shows how Swift processes your question
+3. **Thinking Display**: Shows how parrot processes your question
 4. **Response Area**: Where you'll see answers
 
 ### Response Types
-1. **Thinking Process**: See how Swift reaches its conclusions
+1. **Thinking Process**: See how parrot reaches its conclusions
 2. **Final Answer**: The complete response to your question
 3. **Response Time**: How long it took to get your answer
 
@@ -78,20 +78,20 @@ Swift is a modern voice assistant that helps you get quick answers to your quest
 
 ## Cool Features to Try
 
-1. **Voice Conversations**: Have a natural chat with Swift
+1. **Voice Conversations**: Have a natural chat with parrot
 2. **Complex Questions**: Ask detailed questions about any topic
-3. **Learning Tool**: See how Swift thinks through problems
+3. **Learning Tool**: See how parrot thinks through problems
 4. **Quick Responses**: Get fast, accurate answers
 
 ## About the Technology
 
-Swift is powered by several advanced technologies:
+parrot is powered by several advanced technologies:
 - Groq: For fast thinking
 - Cartesia: For better understanding
 - VAD: For hearing your voice clearly
 - Vercel: For reliable service
 
-## Get the Most from Swift
+## Get the Most from parrot
 
 ### Best Practices
 1. Speak clearly and naturally
