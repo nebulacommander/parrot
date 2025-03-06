@@ -3,8 +3,9 @@
 import { useSignIn } from "@clerk/nextjs";
 import { OAuthStrategy } from "@clerk/types";
 import { motion } from "framer-motion";
-import { FcGoogle } from "react-icons/fc";
-import { BsGithub, BsMicrosoft } from "react-icons/bs";
+import { BsMicrosoft } from "react-icons/bs";
+import { FcGoogle } from 'react-icons/fc';
+import { BsGithub } from 'react-icons/bs';
 import Link from "next/link";
 import { AuthContainer, OAuthButton } from "@/components/auth/shared";
 

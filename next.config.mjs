@@ -3,6 +3,7 @@ import path from "node:path";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	transpilePackages: ['react-icons'],
 	experimental: {
 		after: true,
 	},
