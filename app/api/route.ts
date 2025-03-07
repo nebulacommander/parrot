@@ -38,7 +38,7 @@ function extractThinking(response: string): { thinking: string | null; cleanResp
 }
 
 export async function POST(request: Request) {
-	console.time("transcribe " + request.headers.get("x-vercel-id") || "local");
+	// console.time("transcribe " + request.headers.get("x-vercel-id") || "local");
 
 	const { data, success } = schema.safeParse(await request.formData());
 	if (!success) return new Response("Invalid request", { status: 400 });
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
 	const transcript = await getTranscript(data.input);
 	if (!transcript) return new Response("Invalid audio", { status: 400 });
 
-	console.timeEnd(
-		"transcribe " + request.headers.get("x-vercel-id") || "local"
-	);
-	console.time(
-		"text completion " + request.headers.get("x-vercel-id") || "local"
-	);
+	// console.timeEnd(
+	// 	"transcribe " + request.headers.get("x-vercel-id") || "local"
+	// );
+	// console.time(
+	// 	"text completion " + request.headers.get("x-vercel-id") || "local"
+	// );
 
 	try {
 		const completion = await groq.chat.completions.create({
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
 					role: "system",
 					content: `
 	- You are Parrot, a friendly and expressive groundbreaking human assistant designed to be far ahead of current AI models.
+	- Be friendly, but maintaining professionalism and intelligence in all your responses.
 	- You adapt to conversation depth, providing simple responses or deep insights based on user intent.
 	- You evolves your personality, tone, and humor dynamically, adapting to user preferences, emotions, and context.
 	- You engage in hypothetical simulations, exploring alternate histories, futuristic scenarios, and complex thought experiments
@@ -77,8 +78,7 @@ export async function POST(request: Request) {
 	- Use **adaptive memory** to recall user preferences and past interactions to provide a personalized experience.
 	- Incorporate **storytelling elements** to make explanations more engaging and immersive.
 	- You are aware of user context, such as location (${location()}) and time (${time()}).
-	- Your model is "deepseek-32b," powered by Groq infrastructure for high-speed inference.
-	- Use <think>...</think> tags to show your reasoning process. This will be displayed to the user as your "thinking."
+	- Your model is "gemma2-9b-it" powered by Groq infrastructure for high-speed inference.	
 	- After your thinking, provide a clean, concise response without the thinking tags.
 	- Respond in a **clear, fun, and exciting manner** unless otherwise stated.
 	- Ensure your responses are **expressive, engaging, and compatible with text-to-speech.**
@@ -90,7 +90,6 @@ export async function POST(request: Request) {
 	- Tables for comparisons
 	- Lists for step-by-step instructions
 	- > Blockquotes for important notes
-	- \`code\` for inline code
 	- Code blocks with language specification
 	- Tables should be used to compare features, options, or data
 	- Use proper heading hierarchy (# for main title, ## for sections, ### for subsections)
@@ -109,28 +108,8 @@ export async function POST(request: Request) {
 
 	// In the system prompt section, replace the Mathematical Expression Formatting section with:
 
-### Markdown and Mathematical Formatting
 
-1. Basic Markdown:
-- Use **bold** for emphasis, not **\\[text\\]**
-- Use *italics* for subtle emphasis
-- Use \`code\` for inline code
-- Use > for blockquotes
-- Use --- for horizontal rules
-- Use numbered lists (1. 2. 3.) for steps
-- Use bullet points (- or *) for unordered lists
-
-2. Code Blocks:
-\`\`\`language
-your code here
-\`\`\`
-Example:
-\`\`\`python
-def hello():
-    print("Hello, World!")
-\`\`\`
-
-3. Mathematical Expressions:
+### Mathematical Expressions:
 - Write simple math inline: "2 plus 2 equals 4"
 - Use "raised to the power" instead of "^"
 - Use "square root of" instead of "sqrt"
@@ -140,38 +119,12 @@ def hello():
    Then, we add 4/5 (0.8)
    So, 4 plus 0.8 equals 4.8"
 
-4. Never Use:
-- \\[ or \\] for math
-- LaTeX commands like \\frac
-- $$ or $ for math delimiters
-- Raw LaTeX notation
-
-5. Always:
+### Always:
 - Write in natural, human-readable language
 - Show calculations step by step
 - Explain the process clearly
 - Use everyday mathematical terms
 - Format code in proper code blocks with language specified
-
-### Mathematical Expression Formatting
-- Use \`$...$\` for inline math expressions: \`$x^2 + y^2$\`
-- Use \`\`\`math blocks for displayed equations:
-  \`\`\`math
-  \\frac{d}{dx}(x^2) = 2x
-  \`\`\`
-- Mathematical notation features:
-  - Fractions: \\frac{numerator}{denominator}
-  - Powers: x^2, x^{complex}
-  - Subscripts: x_1, x_{complex}
-  - Greek letters: \\alpha, \\beta, \\gamma
-  - Integrals: \\int_{a}^{b}
-  - Summations: \\sum_{i=1}^{n}
-  - Limits: \\lim_{x \\to 0}
-  - Matrices: \\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}
-  - Align equations: \\begin{align} ... \\end{align}
-- Always use proper LaTeX notation for mathematical expressions
-- Format complex equations in display mode using \`\`\`math blocks
-- Use inline math $...$ for simple expressions within text
 
 ### Response Structure for Mathematical Content
 - Start with a clear explanation in natural language
@@ -285,59 +238,70 @@ def hello():
 		const rawResponse = completion.choices[0].message.content;
 		const { thinking, cleanResponse } = extractThinking(rawResponse);
 
-		console.timeEnd(
-			"text completion " + request.headers.get("x-vercel-id") || "local"
-		);
+		// console.timeEnd(
+		// 	"text completion " + request.headers.get("x-vercel-id") || "local"
+		// );
 
-		console.time(
-			"cartesia request " + request.headers.get("x-vercel-id") || "local"
-		);
+		// console.time(
+		// 	"cartesia request " + request.headers.get("x-vercel-id") || "local"
+		// );
 
-		const voice = await fetch("https://api.cartesia.ai/tts/bytes", {
-			method: "POST",
+		// const voice = await fetch("https://api.cartesia.ai/tts/bytes", {
+		// 	method: "POST",
+		// 	headers: {
+		// 		"Cartesia-Version": "2024-06-10",
+		// 		"Content-Type": "application/json",
+		// 		"X-API-Key": process.env.CARTESIA_API_KEY!,
+		// 	},
+		// 	body: JSON.stringify({
+		// 		model_id: "sonic-english",
+		// 		transcript: cleanResponse, // Only send cleaned response without thinking tags to TTS
+		// 		voice: {
+		// 			mode: "id",
+		// 			id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
+		// 		},
+		// 		output_format: {
+		// 			container: "raw",
+		// 			encoding: "pcm_f32le",
+		// 			sample_rate: 24000,
+		// 		},
+		// 	}),
+		// });
+
+		// console.timeEnd(
+		// 	"cartesia request " + request.headers.get("x-vercel-id") || "local"
+		// );
+
+		// if (!voice.ok) {
+		// 	console.error(await voice.text());
+		// 	return new Response("Voice synthesis failed", { status: 500 });
+		// }
+
+		// console.time("stream " + request.headers.get("x-vercel-id") || "local");
+		// after(() => {
+		// 	console.timeEnd(
+		// 		"stream " + request.headers.get("x-vercel-id") || "local"
+		// 	);
+		// });
+
+		// WE WILL ADD BACK LATER: return new Response(voice.body, {
+		// 	headers: {
+		// 		"X-Transcript": encodeURIComponent(transcript),
+		// 		"X-Response": encodeURIComponent(cleanResponse),
+		// 		"X-Thinking": thinking ? encodeURIComponent(thinking) : "", // Add thinking as a header
+		// 	},
+		// });
+		return new Response(JSON.stringify({ 
+			transcript: transcript,
+			response: rawResponse,
+		  }), {
 			headers: {
-				"Cartesia-Version": "2024-06-10",
-				"Content-Type": "application/json",
-				"X-API-Key": process.env.CARTESIA_API_KEY!,
+			  "Content-Type": "application/json",
+			  "X-Transcript": encodeURIComponent(transcript),
+			  "X-Response": encodeURIComponent(cleanResponse),
+			  "X-Thinking": thinking ? encodeURIComponent(thinking) : "", // Add thinking as a header
 			},
-			body: JSON.stringify({
-				model_id: "sonic-english",
-				transcript: cleanResponse, // Only send cleaned response without thinking tags to TTS
-				voice: {
-					mode: "id",
-					id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
-				},
-				output_format: {
-					container: "raw",
-					encoding: "pcm_f32le",
-					sample_rate: 24000,
-				},
-			}),
-		});
-
-		console.timeEnd(
-			"cartesia request " + request.headers.get("x-vercel-id") || "local"
-		);
-
-		if (!voice.ok) {
-			console.error(await voice.text());
-			return new Response("Voice synthesis failed", { status: 500 });
-		}
-
-		console.time("stream " + request.headers.get("x-vercel-id") || "local");
-		after(() => {
-			console.timeEnd(
-				"stream " + request.headers.get("x-vercel-id") || "local"
-			);
-		});
-
-		return new Response(voice.body, {
-			headers: {
-				"X-Transcript": encodeURIComponent(transcript),
-				"X-Response": encodeURIComponent(cleanResponse),
-				"X-Thinking": thinking ? encodeURIComponent(thinking) : "", // Add thinking as a header
-			},
-		});
+	});
 	} catch (error) {
 		console.error("AI completion error:", error);
 		return new Response("AI service error", { status: 503 });

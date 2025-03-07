@@ -1,5 +1,6 @@
 "use client";
 
+import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import clsx from "clsx";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -8,17 +9,14 @@ import { usePlayer } from "@/lib/usePlayer";
 import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { CodeBlock } from "../components/ui";
-import { Markdown } from '@/components/markdown';
 import { HelpMenu } from '../components/ui/help-menu';
-
-// Replace the existing parseResponse rendering with:
-
+import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, HelpCircle } from 'lucide-react';
 
 type Message = {
-	role: "user" | "assistant";
-	content: string;
-	thinking?: string;
-	latency?: number;
+  role: "user" | "assistant";
+  content: string;
+  thinking?: string;
+  latency?: number;
 };
 
 function parseResponse(content: string): Array<{type: string, content: string, language?: string}> {
@@ -205,16 +203,89 @@ export default function Home() {
 
 	const lastAssistantMessage = messages.filter(m => m.role === "assistant").pop();
 
-	return (
-		<>
-			<div className="pb-4 min-h-28">
-				<h1 className="text-2xl font-bold text-center mb-2">Parrot</h1>
-				<p className="text-neutral-500 dark:text-neutral-400 text-center">
-					Powered by Deepseek AI + Groq
-				</p>
-			</div>
+	const templatePrompts = [
+		{
+		  icon: <HelpCircle className="w-4 h-4" />,
+		  text: "Help me with...",
+		  suggestions: ["writing a blog post", "solving a math problem", "debugging code", "learning a new topic"]
+		},
+		{
+		  icon: <Code2 className="w-4 h-4" />,
+		  text: "Write code for...",
+		  suggestions: ["a REST API", "a React component", "a sorting algorithm", "data processing"]
+		},
+		{
+		  icon: <Brain className="w-4 h-4" />,
+		  text: "Explain...",
+		  suggestions: ["quantum physics", "machine learning", "blockchain", "neural networks"]
+		},
+		{
+		  icon: <Wand2 className="w-4 h-4" />,
+		  text: "Generate...",
+		  suggestions: ["a story idea", "a business plan", "a project structure", "creative concepts"]
+		},
+	  ];
+	
+	  const [suggestions, setSuggestions] = useState<string[]>([]);
+	
+	  const handleTemplateClick = (template: typeof templatePrompts[0]) => {
+		setInput(template.text);
+		setSuggestions(template.suggestions);
+		inputRef.current?.focus();
+	  };
 
-			<form
+	return (
+		<div className="min-h-screen flex flex-col">
+			{/* Header with auth button */}
+			<header className="fixed top-4 right-4 z-50">
+				<SignedIn>
+					<UserButton 
+						afterSignOutUrl="/sign-in"
+						appearance={{
+							elements: {
+								avatarBox: "w-10 h-10"
+							}
+						}} 
+					/>
+				</SignedIn>
+				<SignedOut>
+					<SignInButton mode="modal">
+						<button className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+							Sign in
+						</button>
+					</SignInButton>
+				</SignedOut>
+			</header>
+
+			{/* Main content - centered vertically */}
+			<div className="flex-1 flex flex-col items-center justify-center -mt-32">
+				<div className="w-full max-w-3xl px-4 space-y-8">
+					{/* Title and description */}
+					<div className="text-center space-y-2 mb-8">
+						<h1 className="text-2xl font-bold">Parrot</h1>
+						<p className="text-neutral-500 dark:text-neutral-400">
+							Powered by Deepseek AI + Groq
+						</p>
+					</div>
+
+					{/* Template prompts */}
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+						{templatePrompts.map((template) => (
+							<button
+								key={template.text}
+								onClick={() => handleTemplateClick(template)}
+								className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
+							>
+								<span className="text-neutral-500 dark:text-neutral-400">
+									{template.icon}
+								</span>
+								<span className="text-sm truncate">{template.text}</span>
+							</button>
+						))}
+					</div>
+
+					{/* Input form */}
+					<form
 				className="rounded-full bg-neutral-200/80 dark:bg-neutral-800/80 flex items-center w-full max-w-3xl border border-transparent hover:border-neutral-300 focus-within:border-neutral-400 hover:focus-within:border-neutral-400 dark:hover:border-neutral-700 dark:focus-within:border-neutral-600 dark:hover:focus-within:border-neutral-600"
 				onSubmit={handleFormSubmit}
 			>
@@ -236,102 +307,114 @@ export default function Home() {
 				>
 					{isPending ? <LoadingIcon /> : <EnterIcon />}
 				</button>
-			</form>
 
-			<div className="pt-4 w-full max-w-3xl space-y-6">
-				{messages.length > 0 ? (
-					<div>
-						{lastAssistantMessage?.thinking && showThinking && (
-							<div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-								<div className="flex items-center mb-2">
-									<div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-									<h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
+						{/* Suggestions */}
+						{suggestions.length > 0 && input && (
+							<div className="absolute w-full mt-2 py-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg">
+								{suggestions.map((suggestion) => (
 									<button
-										onClick={() => setShowThinking(false)}
-										className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+										key={suggestion}
+										onClick={() => {
+											setInput(input + " " + suggestion);
+											setSuggestions([]);
+											inputRef.current?.focus();
+										}}
+										className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm"
 									>
-										Hide
+										{suggestion}
 									</button>
+								))}
+							</div>
+						)}
+					</form>
+
+					{/* Messages */}
+					<div className="pt-4 w-full max-w-3xl space-y-6">
+						{messages.length > 0 ? (
+							<div>
+								{lastAssistantMessage?.thinking && showThinking && (
+									<div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+										<div className="flex items-center mb-2">
+											<div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+											<h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
+											<button
+												onClick={() => setShowThinking(false)}
+												className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+											>
+												Hide
+											</button>
+										</div>
+										<p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
+											{lastAssistantMessage.thinking}
+										</p>
+									</div>
+								)}
+
+								<div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+									<div className="prose dark:prose-invert">
+										{lastAssistantMessage?.content}
+									</div>
+									{lastAssistantMessage?.latency && (
+										<span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
+											Response time: {lastAssistantMessage?.latency}ms
+										</span>
+									)}
 								</div>
-								<p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
-									{lastAssistantMessage.thinking}
-								</p>
+
+								{!showThinking && lastAssistantMessage?.thinking && (
+									<button
+										onClick={() => setShowThinking(true)}
+										className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+									>
+										Show thinking
+									</button>
+								)}
 							</div>
-						)}
-
-						<div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
-							<div className="text-neutral-800 dark:text-neutral-200">
-							{lastAssistantMessage?.content && (
-  <Markdown content={lastAssistantMessage.content} />
-)}
-							</div>
-							{lastAssistantMessage?.latency && (
-								<span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
-									Response time: {lastAssistantMessage.latency}ms
-								</span>
-							)}
-						</div>
-
-						{!showThinking && lastAssistantMessage?.thinking && (
-							<button
-								onClick={() => setShowThinking(true)}
-								className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-							>
-								Show thinking
-							</button>
-						)}
-					</div>
-				) : (
-					<div className="text-center">
-						<p className="text-neutral-600 dark:text-neutral-400">
-							A fast, open-source voice assistant powered by{" "}
-							<A href="https://groq.com">Groq</A>,{" "}
-							<A href="https://cartesia.ai">Cartesia</A>,{" "}
-							<A href="https://www.vad.ricky0123.com/">VAD</A>,
-							and <A href="https://vercel.com">Vercel</A>.{" "}
-							<A
-								href="https://github.com/WebEssentz/orbe-ai/"
-								target="_blank"
-							>
-								Learn more
-							</A>
-							.
-						</p>
-
-						{vad.loading ? (
-							<p className="mt-4 text-neutral-500 dark:text-neutral-500">Loading speech detection...</p>
-						) : vad.errored ? (
-							<p className="mt-4 text-red-500">Failed to load speech detection.</p>
 						) : (
-							<p className="mt-4 text-neutral-600 dark:text-neutral-400">Start talking or type a question to chat.</p>
-						)}
+							<div className="text-center">
+								{/* <p className="text-neutral-600 dark:text-neutral-400">
+									A fast, open-source voice assistant powered by{" "}
+									<A href="https://groq.com">Groq</A>,{" "}
+									<A href="https://cartesia.ai">Cartesia</A>,{" "}
+									<A href="https://www.vad.ricky0123.com/">VAD</A>,
+									and <A href="https://vercel.com">Vercel</A>.{" "}
+									<A
+										href="https://github.com/WebEssentz/orbe-ai/"
+										target="_blank"
+									>
+										Learn more
+									</A>
+									.
+								</p>
 
-						<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-500">
-							Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+L</kbd> to toggle thinking display
-						</p>
+								{vad.loading ? (
+									<p className="mt-4 text-neutral-500 dark:text-neutral-500">Loading speech detection...</p>
+								) : vad.errored ? (
+									<p className="mt-4 text-red-500">Failed to load speech detection.</p>
+								) : (
+									<p className="mt-4 text-neutral-600 dark:text-neutral-400">Start talking or type a question to chat.</p>
+								)}
+
+								<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-500">
+									Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+Z</kbd> to toggle thinking display
+								</p> */}
+							</div>
+						)}
 					</div>
-				)}
+				</div>
 			</div>
 
-			<div
-				className={clsx(
-					"absolute size-36 blur-3xl rounded-full bg-gradient-to-b from-blue-200 to-blue-400 dark:from-blue-600 dark:to-blue-800 -z-50 transition ease-in-out",
-					{
-						"opacity-0": vad.loading || vad.errored,
-						"opacity-30":
-							!vad.loading && !vad.errored && !vad.userSpeaking,
-						"opacity-100 scale-110": vad.userSpeaking,
-					}
-				)}
-			/>
-			<footer className="mt-8 mb-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
-				<p>
-					Parrot is powered by AI • Double check response
-				</p>
-			</footer>
-			
-			<HelpMenu />
-		</>
+			{/* Footer */}
+			<>
+				<footer className="mt-auto py-4">
+					<p className="text-center text-sm text-neutral-500">
+						Parrot is powered by AI • Double check response
+					</p>
+				</footer>
+
+				<HelpMenu />
+			</>
+		</div>
 	);
 }
 
