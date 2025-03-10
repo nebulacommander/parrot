@@ -9,7 +9,7 @@ import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { CodeBlock } from "../components/ui";
 import { HelpMenu } from '../components/ui/help-menu';
-import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, HelpCircle, ChevronDown } from 'lucide-react';
+import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, HelpCircle, ChevronDown, MenuIcon, PlusIcon } from 'lucide-react';
 import debounce from 'lodash/debounce';
 
 type Message = {
@@ -267,180 +267,173 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <header className="fixed top-4 right-4 z-50">
-        <SignedIn>
-          <UserButton 
-            afterSignOutUrl="/sign-in"
-            appearance={{
-              elements: {
-                avatarBox: "w-10 h-10"
-              }
-            }} 
-          />
-        </SignedIn>
-        <SignedOut>
-          <SignInButton mode="modal">
-            <button className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
-              Sign in
-            </button>
-          </SignInButton>
-        </SignedOut>
+      <header className="sticky top-0 z-10 p-3 mb-1.5 flex items-center justify-between font-semibold bg-token-main-surface-primary border-b">
+        <div className="flex items-center gap-0 overflow-hidden">
+          <div className="flex items-center">
+            {/* Sidebar Toggle */}
+            <span className="flex" data-state="closed">
+              <button 
+                aria-label="Open sidebar" 
+                className="h-10 rounded-lg px-2 text-token-text-secondary hover:bg-token-surface-hover focus-visible:outline-none"
+              >
+                <MenuIcon className="h-6 w-6" />
+              </button>
+            </span>
+            
+            {/* New Chat Button */}
+            <span className="flex" data-state="closed">
+              <button 
+                aria-label="New chat"
+                className="h-10 rounded-lg px-2 text-token-text-secondary hover:bg-token-surface-hover focus-visible:outline-none"
+              >
+                <PlusIcon className="h-6 w-6" />
+              </button>
+            </span>
+          </div>
+
+          {/* Model Switcher */}
+          <button 
+            className="group flex cursor-pointer items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-token-surface-hover font-semibold text-token-text-secondary overflow-hidden whitespace-nowrap"
+          >
+            <span>Parrot AI</span>
+            <ChevronDown className="h-4 w-4 text-token-text-tertiary" />
+          </button>
+        </div>
+
+        {/* User Profile */}
+        <div className="flex items-center gap-2 pr-1">
+          <SignedIn>
+            <UserButton afterSignOutUrl="/sign-in" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                Sign in
+              </button>
+            </SignInButton>
+          </SignedOut>
+        </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center -mt-32">
-        <div className="w-full max-w-3xl px-4 space-y-8">
-          {/* Title */}
-          <div className="text-center space-y-2 mb-8">
-            <h1 className="text-2xl font-bold">Parrot</h1>
-            <p className="text-neutral-500 dark:text-neutral-400">
-              Powered by Deepseek AI + Groq
-            </p>
-          </div>
+      <main className="relative flex-1 overflow-auto">
+        <div className="relative h-full w-full flex flex-col items-center pt-0">
+          {messages.length > 0 ? (
+            <div className="w-full max-w-3xl px-4 py-4 space-y-6">
+              {lastAssistantMessage?.thinking && showThinking && (
+                <div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <div className="flex items-center mb-2">
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                    <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
+                    <button
+                      onClick={() => setShowThinking(false)}
+                      className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                    >
+                      Hide
+                    </button>
+                  </div>
+                  <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
+                    {lastAssistantMessage.thinking}
+                  </p>
+                </div>
+              )}
 
-          {/* Template Prompts Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            {templatePrompts.map((template) => (
-              <button
-                key={template.text}
-                onClick={() => handleTemplateClick(template)}
-                className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
-              >
-                <span className="text-neutral-500 dark:text-neutral-400">
-                  {template.icon}
-                </span>
-                <span className="text-sm truncate">{template.text}</span>
-              </button>
-            ))}
-          </div>
+              <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <div className="prose dark:prose-invert">
+                  {lastAssistantMessage?.content}
+                </div>
+                {lastAssistantMessage?.latency && (
+                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
+                    Response time: {lastAssistantMessage?.latency}ms
+                  </span>
+                )}
+              </div>
 
-          {/* Input Form */}
-          <form 
-            className="rounded-full bg-neutral-200/80 dark:bg-neutral-800/80 flex items-center w-full max-w-3xl border border-transparent hover:border-neutral-300 focus-within:border-neutral-400 hover:focus-within:border-neutral-400 dark:hover:border-neutral-700 dark:focus-within:border-neutral-600 dark:hover:focus-within:border-neutral-600"
-            onSubmit={handleFormSubmit}
-          >
-            <input
-              type="text"
-              className="bg-transparent focus:outline-none p-4 w-full placeholder:text-neutral-600 dark:placeholder:text-neutral-400"
-              required
-              placeholder="Ask me anything"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              ref={inputRef}
-            />
-            <button
-              type="submit"
-              className="p-4 text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-              disabled={isPending}
-              aria-label="Submit"
-            >
-              {isPending ? <LoadingIcon /> : <EnterIcon />}
-            </button>
+              {!showThinking && lastAssistantMessage?.thinking && (
+                <button
+                  onClick={() => setShowThinking(true)}
+                  className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                >
+                  Show thinking
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="w-full max-w-3xl px-4 flex flex-col items-center justify-center min-h-[60vh]">
+              {/* Title Section */}
+              <div className="text-center space-y-2 mb-8">
+                <h1 className="text-2xl font-bold">Parrot</h1>
+                <p className="text-neutral-500 dark:text-neutral-400">
+                  Powered by Deepseek AI + Groq
+                </p>
+              </div>
 
-            {/* Suggestions Dropdown */}
-            {suggestions.length > 0 && input && (
-              <div className="absolute w-full mt-2 py-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg">
-                {suggestions.map((suggestion) => (
+              {/* Template Prompts Grid */}
+              <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                {templatePrompts.map((template) => (
                   <button
-                    key={suggestion}
-                    onClick={() => {
-                      setInput(input + " " + suggestion);
-                      setSuggestions([]);
-                      inputRef.current?.focus();
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm"
+                    key={template.text}
+                    onClick={() => handleTemplateClick(template)}
+                    className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
                   >
-                    {suggestion}
+                    <span className="text-neutral-500 dark:text-neutral-400">
+                      {template.icon}
+                    </span>
+                    <span className="text-sm truncate">{template.text}</span>
                   </button>
                 ))}
               </div>
-            )}
-          </form>
+            </div>
+          )}
 
-          {/* Messages Display */}
-          <div className="pt-4 w-full max-w-3xl space-y-6">
-            {messages.length > 0 ? (
-              <div>
-                {lastAssistantMessage?.thinking && showThinking && (
-                  <div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                    <div className="flex items-center mb-2">
-                      <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-                      <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
+          {/* Fixed Input Form at Bottom */}
+          <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
+            <div className="mx-auto max-w-3xl px-4 pb-4">
+              <form 
+                onSubmit={handleFormSubmit}
+                className="relative flex items-center w-full rounded-lg border bg-background shadow-sm focus-within:ring-2 ring-primary/20"
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Message Parrot..."
+                  className="flex-1 px-4 py-3 bg-transparent focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-3 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                >
+                  {isPending ? <LoadingIcon /> : <EnterIcon />}
+                </button>
+
+                {/* Suggestions Dropdown */}
+                {suggestions.length > 0 && input && (
+                  <div className="absolute bottom-full left-0 right-0 mb-2 py-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg">
+                    {suggestions.map((suggestion) => (
                       <button
-                        onClick={() => setShowThinking(false)}
-                        className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                        key={suggestion}
+                        onClick={() => {
+                          setInput(input + " " + suggestion);
+                          setSuggestions([]);
+                          inputRef.current?.focus();
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm"
                       >
-                        Hide
+                        {suggestion}
                       </button>
-                    </div>
-                    <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
-                      {lastAssistantMessage.thinking}
-                    </p>
+                    ))}
                   </div>
                 )}
-
-                <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                  <div className="prose dark:prose-invert">
-                    {lastAssistantMessage?.content}
-                  </div>
-                  {lastAssistantMessage?.latency && (
-                    <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
-                      Response time: {lastAssistantMessage?.latency}ms
-                    </span>
-                  )}
-                </div>
-
-                {!showThinking && lastAssistantMessage?.thinking && (
-                  <button
-                    onClick={() => setShowThinking(true)}
-                    className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                  >
-                    Show thinking
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="text-center">
-                {/* <p className="text-neutral-600 dark:text-neutral-400">
-                  A fast, open-source voice assistant powered by{" "}
-                  <A href="https://groq.com">Groq</A>,{" "}
-                  <A href="https://cartesia.ai">Cartesia</A>,{" "}
-                  <A href="https://www.vad.ricky0123.com/">VAD</A>,
-                  and <A href="https://vercel.com">Vercel</A>.{" "}
-                  <A
-                    href="https://github.com/WebEssentz/orbe-ai/"
-                    target="_blank"
-                  >
-                    Learn more
-                  </A>
-                  .
-                </p>
-
-                {vad.loading ? (
-                  <p className="mt-4 text-neutral-500 dark:text-neutral-500">Loading speech detection...</p>
-                ) : vad.errored ? (
-                  <p className="mt-4 text-red-500">Failed to load speech detection.</p>
-                ) : (
-                  <p className="mt-4 text-neutral-600 dark:text-neutral-400">Start talking or type a question to chat.</p>
-                )}
-
-                <p className="mt-4 text-xs text-neutral-500 dark:text-neutral-500">
-                  Press <kbd className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded border border-neutral-300 dark:border-neutral-700">Ctrl+Z</kbd> to toggle thinking display
-                </p> */}
-              </div>
-            )}
+              </form>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-auto py-4">
-        <p className="text-center text-sm text-neutral-500">
-          Parrot is powered by AI • Double check response
-        </p>
-      </footer>
+      </main>
 
       <HelpMenu />
     </div>

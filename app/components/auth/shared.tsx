@@ -5,12 +5,13 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { BrainCircuit } from "lucide-react";
 import Link from "next/link";
+import ParrotLogo from "../ui/ParrotLogo"
 
 export const BrandLogo = () => (
   <Link href="/" className="flex items-center gap-2.5 text-foreground">
-    <BrainCircuit className="h-6 w-6 sm:h-7 sm:w-7" />
+    <ParrotLogo />
     <span className="font-outfit text-xl sm:text-2xl font-bold">
-      Orbe
+      Parrot
     </span>
   </Link>
 );
@@ -57,40 +58,39 @@ export const AuthContainer = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const OAuthButton = ({
+export function OAuthButton({
   icon,
   label,
+  description,
   onClick,
-  className
+  className = "",
 }: {
   icon: React.ReactNode;
   label: string;
+  description: string;
   onClick: () => void;
   className?: string;
-}) => (
-  <motion.button
-    whileHover={{ scale: 1.005 }}
-    whileTap={{ scale: 0.995 }}
-    onClick={onClick}
-    className={cn(`
-      group relative w-full flex items-center justify-center gap-3
-      px-5 py-3 rounded-lg
-      text-sm font-medium
-      bg-card/50 hover:bg-card/80
-      border border-border/50 hover:border-border
-      shadow-sm hover:shadow
-      transition-all duration-200
-      backdrop-blur-sm
-    `, className)}
-  >
-    {/* Icon wrapper */}
-    <span className="transition-transform duration-200 group-hover:scale-110">
-      {icon}
-    </span>
-    
-    {/* Label */}
-    <span className="text-foreground/90">
-      {label}
-    </span>
-  </motion.button>
-);
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        w-full px-6 py-4 flex items-center gap-4
+        bg-black/10 backdrop-blur-xl
+        border border-white/10
+        rounded-xl hover:bg-black/20
+        transition-all duration-200
+        group
+        ${className}
+      `}
+    >
+      <div className="p-2 bg-white/5 rounded-lg">{icon}</div>
+      <div className="text-left">
+        <div className="font-medium text-white group-hover:text-blue-400 transition-colors">
+          {label}
+        </div>
+        <div className="text-sm text-gray-400">{description}</div>
+      </div>
+    </button>
+  );
+}

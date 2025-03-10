@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { HelpCircle, Keyboard, FileText, Shield, Book, ChevronRight } from 'lucide-react';
 import { Modal } from './modal';
+import { KeyboardShortcuts } from './keyboard-shortcuts';
 
 interface HelpItem {
   id: string;
@@ -18,25 +19,7 @@ export function HelpMenu() {
       id: 'shortcuts',
       icon: <Keyboard className="w-4 h-4" />,
       label: 'Keyboard Shortcuts',
-      content: (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { key: 'Enter', action: 'Focus input' },
-              { key: 'Esc', action: 'Clear input' },
-              { key: 'Ctrl + Z', action: 'Toggle thinking' },
-              { key: '↑/↓', action: 'Navigate history' },
-            ].map(({ key, action }) => (
-              <div key={key} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">{action}</span>
-                <kbd className="px-2 py-1 text-xs font-mono bg-white dark:bg-neutral-900 rounded border border-neutral-200 dark:border-neutral-700 shadow-sm">
-                  {key}
-                </kbd>
-              </div>
-            ))}
-          </div>
-        </div>
-      )
+      content: <KeyboardShortcuts />
     },
     {
       id: 'docs',

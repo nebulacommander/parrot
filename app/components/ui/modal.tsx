@@ -53,35 +53,32 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
         >
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <motion.div
-              ref={modalRef}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-lg rounded-lg bg-background p-6 shadow-lg"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                {title && (
-                  <h2 className="text-lg font-semibold">{title}</h2>
-                )}
-                <button
-                  onClick={onClose}
-                  className="absolute right-4 top-4 rounded-sm p-1 opacity-70 hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+         <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.95 }}
+            className="relative w-full max-w-4xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className="px-4 pb-4 pt-5 sm:p-6 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {title}
+              </h2>
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
 
-              {/* Content */}
-              <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
-                {children}
-              </div>
-            </motion.div>
-          </div>
+            {/* Content */}
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+              {children}
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

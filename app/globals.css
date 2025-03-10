@@ -4,6 +4,60 @@
 @import 'prismjs/themes/prism-tomorrow.css';
 @import 'katex/dist/katex.min.css';
 
+.bg-github {
+  background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@layer components {
+  .border-token-border-light {
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  .text-token-text-primary {
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .text-token-text-secondary {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+}
+
+.bg-google {
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc05 75%, #ea4335 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.bg-microsoft {
+  background: linear-gradient(135deg, #00a4ef 0%, #7fba00 50%, #ffb900 75%, #f25022 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glitch Effect */
+.glitch-effect {
+  animation: glitch 1s infinite;
+  text-shadow: 
+    2px 2px #ff00ea,
+    -2px -2px #00ff00;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
 /* Add custom styles for math content */
 .math-content {
   .katex-display {
@@ -81,7 +135,15 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -100,6 +162,14 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
@@ -115,7 +185,30 @@
   * {
     @apply border-border;
   }
+  :root {
+    --header-height: 60px;
+  }
+
+  .bg-token-main-surface-primary {
+    @apply bg-background;
+  }
+
+  .text-token-text-secondary {
+    @apply text-muted-foreground;
+  }
+
+  .text-token-text-tertiary {
+    @apply text-muted-foreground/70;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+
+  html, body {
+    @apply h-full;
+  }
+
+  body > div {
+    @apply h-full;
   }
 }

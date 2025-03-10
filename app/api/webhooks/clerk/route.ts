@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import { db } from "@/src/db/index";
 
 export const POST = async (req: Request) => {
     const { data } = await req.json();
