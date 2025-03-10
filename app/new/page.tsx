@@ -9,8 +9,10 @@ import { track } from "@vercel/analytics";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { CodeBlock } from "../components/ui";
 import { HelpMenu } from '../components/ui/help-menu';
-import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, HelpCircle, ChevronDown, MenuIcon, PlusIcon } from 'lucide-react';
+import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, HelpCircle, ChevronDown, MenuIcon, PlusIcon, Pen } from 'lucide-react';
 import debounce from 'lodash/debounce';
+import { ChatSidebar } from '../components/sidebar/sidebar';
+import Link from "next/link";
 
 type Message = {
   role: "user" | "assistant";
@@ -82,6 +84,7 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const vad = useMicVAD({
     startOnLoad: true,
@@ -267,175 +270,171 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 p-3 mb-1.5 flex items-center justify-between font-semibold bg-token-main-surface-primary border-b">
-        <div className="flex items-center gap-0 overflow-hidden">
-          <div className="flex items-center">
-            {/* Sidebar Toggle */}
-            <span className="flex" data-state="closed">
-              <button 
-                aria-label="Open sidebar" 
-                className="h-10 rounded-lg px-2 text-token-text-secondary hover:bg-token-surface-hover focus-visible:outline-none"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-            </span>
+    <div className="flex h-screen w-full overflow-hidden bg-neutral-100 dark:bg-black">
+      {sidebarOpen && <ChatSidebar onClose={() => setSidebarOpen(false)} />}
+      
+      <div className="flex h-full w-full flex-col">
+        <header className="flex items-center justify-between p-3 bg-neutral-100 dark:bg-black">
+          <div className="flex items-center gap-0">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+            >
+              <MenuIcon className="h-6 w-6" />
+            </button>
             
-            {/* New Chat Button */}
-            <span className="flex" data-state="closed">
-              <button 
-                aria-label="New chat"
-                className="h-10 rounded-lg px-2 text-token-text-secondary hover:bg-token-surface-hover focus-visible:outline-none"
-              >
-                <PlusIcon className="h-6 w-6" />
+            <Link href="/new">
+              <button className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800">
+                <Pen className="h-6 w-6" />
               </button>
-            </span>
+            </Link>
+
+            {/* Model switcher button */}
+            <button className="group flex items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-neutral-200 dark:hover:bg-neutral-800">
+              <span>Parrot AI</span>
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </button>
           </div>
 
-          {/* Model Switcher */}
-          <button 
-            className="group flex cursor-pointer items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-token-surface-hover font-semibold text-token-text-secondary overflow-hidden whitespace-nowrap"
-          >
-            <span>Parrot AI</span>
-            <ChevronDown className="h-4 w-4 text-token-text-tertiary" />
-          </button>
-        </div>
+          <div className="flex items-center gap-2 pr-1">
+            <SignedIn>
+              <UserButton afterSignOutUrl="/sign-in" />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                  Sign in
+                </button>
+              </SignInButton>
+            </SignedOut>
+          </div>
+        </header>
 
-        {/* User Profile */}
-        <div className="flex items-center gap-2 pr-1">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/sign-in" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
-                Sign in
-              </button>
-            </SignInButton>
-          </SignedOut>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="relative flex-1 overflow-auto">
-        <div className="relative h-full w-full flex flex-col items-center pt-0">
-          {messages.length > 0 ? (
-            <div className="w-full max-w-3xl px-4 py-4 space-y-6">
-              {lastAssistantMessage?.thinking && showThinking && (
-                <div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                  <div className="flex items-center mb-2">
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-                    <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
-                    <button
-                      onClick={() => setShowThinking(false)}
-                      className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                    >
-                      Hide
-                    </button>
+        <main className="relative flex-1 overflow-hidden">
+          <div className="relative h-full w-full flex flex-col items-center pt-0">
+            {messages.length > 0 ? (
+              <div className="w-full max-w-3xl px-4 py-4 space-y-6">
+                {lastAssistantMessage?.thinking && showThinking && (
+                  <div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                      <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
+                      <button
+                        onClick={() => setShowThinking(false)}
+                        className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                      >
+                        Hide
+                      </button>
+                    </div>
+                    <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
+                      {lastAssistantMessage.thinking}
+                    </p>
                   </div>
-                  <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
-                    {lastAssistantMessage.thinking}
+                )}
+
+                <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <div className="prose dark:prose-invert">
+                    {lastAssistantMessage?.content}
+                  </div>
+                  {lastAssistantMessage?.latency && (
+                    <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
+                      Response time: {lastAssistantMessage?.latency}ms
+                    </span>
+                  )}
+                </div>
+
+                {!showThinking && lastAssistantMessage?.thinking && (
+                  <button
+                    onClick={() => setShowThinking(true)}
+                    className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                  >
+                    Show thinking
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="w-full max-w-3xl px-4 flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="text-center space-y-2 mb-8">
+                  <h1 className="text-2xl font-bold">Parrot</h1>
+                  <p className="text-neutral-500 dark:text-neutral-400">
+                    Powered by Deepseek AI + Groq
                   </p>
                 </div>
-              )}
 
-              <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                <div className="prose dark:prose-invert">
-                  {lastAssistantMessage?.content}
+                <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                  {templatePrompts.map((template) => (
+                    <button
+                      key={template.text}
+                      onClick={() => handleTemplateClick(template)}
+                      className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
+                    >
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {template.icon}
+                      </span>
+                      <span className="text-sm truncate">{template.text}</span>
+                    </button>
+                  ))}
                 </div>
-                {lastAssistantMessage?.latency && (
-                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
-                    Response time: {lastAssistantMessage?.latency}ms
-                  </span>
-                )}
               </div>
+            )}
 
-              {!showThinking && lastAssistantMessage?.thinking && (
-                <button
-                  onClick={() => setShowThinking(true)}
-                  className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+            <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
+              <div className="w-full">
+                <div className="flex justify-center empty:hidden"></div>
+                <form 
+                  onSubmit={handleFormSubmit}
+                  className="w-full"
                 >
-                  Show thinking
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="w-full max-w-3xl px-4 flex flex-col items-center justify-center min-h-[60vh]">
-              {/* Title Section */}
-              <div className="text-center space-y-2 mb-8">
-                <h1 className="text-2xl font-bold">Parrot</h1>
-                <p className="text-neutral-500 dark:text-neutral-400">
-                  Powered by Deepseek AI + Groq
-                </p>
-              </div>
-
-              {/* Template Prompts Grid */}
-              <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                {templatePrompts.map((template) => (
-                  <button
-                    key={template.text}
-                    onClick={() => handleTemplateClick(template)}
-                    className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
-                  >
-                    <span className="text-neutral-500 dark:text-neutral-400">
-                      {template.icon}
-                    </span>
-                    <span className="text-sm truncate">{template.text}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Fixed Input Form at Bottom */}
-          <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
-            <div className="mx-auto max-w-3xl px-4 pb-4">
-              <form 
-                onSubmit={handleFormSubmit}
-                className="relative flex items-center w-full rounded-lg border bg-background shadow-sm focus-within:ring-2 ring-primary/20"
-              >
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Message Parrot..."
-                  className="flex-1 px-4 py-3 bg-transparent focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="px-4 py-3 text-muted-foreground hover:text-foreground disabled:opacity-50"
-                >
-                  {isPending ? <LoadingIcon /> : <EnterIcon />}
-                </button>
-
-                {/* Suggestions Dropdown */}
-                {suggestions.length > 0 && input && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 py-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-lg">
-                    {suggestions.map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        onClick={() => {
-                          setInput(input + " " + suggestion);
-                          setSuggestions([]);
-                          inputRef.current?.focus();
-                        }}
-                        className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
+                  <div className="relative z-[1] flex h-full max-w-full flex-1 flex-col">
+                    <div className="group relative z-[1] flex w-full items-center">
+                      <div className="w-full">
+                        <div className="flex w-full cursor-text flex-col rounded-3xl border border-token-border-light px-3 py-1 duration-150 ease-in-out bg-token-main-surface-primary dark:bg-[#303030] dark:border-none shadow-[0_9px_9px_0px_rgba(0,0,0,0.01),_0_2px_5px_0px_rgba(0,0,0,0.06)] has-[:focus]:shadow-[0_2px_12px_0px_rgba(0,0,0,0.04),_0_9px_9px_0px_rgba(0,0,0,0.01),_0_2px_5px_0px_rgba(0,0,0,0.06)]">
+                          <div className="flex flex-col justify-start min-h-0">
+                            <div className="flex min-h-[44px] items-start pl-1">
+                              <div className="min-w-0 max-w-full flex-1">
+                                <div className="max-h-[25dvh] max-h-52 overflow-auto">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Message Parrot..."
+                                    className="block h-10 w-full resize-none border-0 bg-transparent px-0 py-2 text-token-text-primary placeholder:text-token-text-tertiary focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-2 mt-1 flex items-center justify-between sm:mt-5">
+                            <div className="flex gap-x-1.5">
+                              <button className="flex h-9 w-9 items-center justify-center rounded-full border border-token-border-light text-token-text-secondary hover:bg-token-main-surface-secondary dark:hover:bg-gray-700">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]">
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M12 3C12.5523 3 13 3.44772 13 4L13 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13L13 13L13 20C13 20.5523 12.5523 21 12 21C11.4477 21 11 20.5523 11 20L11 13L4 13C3.44772 13 3 12.5523 3 12C3 11.4477 3.44772 11 4 11L11 11L11 4C11 3.44772 11.4477 3 12 3Z" fill="currentColor"/>
+                                </svg>
+                              </button>
+                            </div>
+                            
+                            <div className="flex gap-x-1.5">
+                              <button 
+                                type="submit"
+                                disabled={isPending}
+                                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black text-white transition-colors hover:opacity-70 disabled:opacity-30 dark:bg-white dark:text-black"
+                              >
+                                {isPending ? <LoadingIcon /> : <EnterIcon />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </form>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-
-      <HelpMenu />
+        </main>
+      </div>
     </div>
   );
 }

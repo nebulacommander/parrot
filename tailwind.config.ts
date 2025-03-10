@@ -121,6 +121,12 @@ const config: Config = {
   			}
   		},
   		colors: {
+			'light-main': 'var(--light-main)',
+        'light-sidebar': 'var(--light-sidebar)',
+        'light-header': 'var(--light-header)',
+        'dark-main': 'var(--dark-main)',
+        'dark-sidebar': 'var(--dark-sidebar)',
+        'dark-header': 'var(--dark-header)',
   			neutral: {
   				'50': '#fafafa',
   				'100': '#f5f5f5',

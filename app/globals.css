@@ -144,6 +144,8 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --token-border-light: 220 13% 91%;
+    --token-main-surface-secondary: 0 0% 96.1%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -177,7 +179,9 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
+    --token-border-light: 240 3.7% 15.9%;
+    --token-main-surface-secondary: 240 3.7% 15.9%;
   }
 }
 
@@ -211,4 +215,54 @@
   body > div {
     @apply h-full;
   }
+}
+
+:root {
+  --background: 0 0% 98%;
+  --foreground: 0 0% 3.9%;
+}
+
+[data-theme='dark'] {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 98%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 96%;
+    --foreground: 0 0% 3.9%;
+    --sidebar-background: 0 0% 94%;
+    --card: 0 0% 100%;
+    /* ...other existing variables... */
+  }
+  
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --sidebar-background: 240 5.9% 10%;
+    --card: 0 0% 3.9%;
+    /* ...other existing dark mode variables... */
+  }
+}
+
+/* Remove any conflicting background colors */
+.bg-token-main-surface-primary {
+  @apply bg-neutral-100 dark:bg-black;
+}
+
+.sidebar {
+  @apply bg-[#f0f0f0] dark:bg-neutral-900;
+}
+
+.border-token-border-light {
+  border-color: hsl(var(--token-border-light));
+}
+
+.bg-token-main-surface-secondary {
+  background-color: hsl(var(--token-main-surface-secondary));
 }

@@ -35,6 +35,7 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
+    <SidebarProvider>
     <html lang="en">
       <body
         className={clsx(
@@ -45,9 +46,7 @@ export default function Layout({
       >
         <ClerkProvider>
           <main className="flex flex-col items-center justify-center grow">
-          <SidebarProvider>
             {children}
-          </SidebarProvider>
           </main>
         </ClerkProvider>
 
@@ -59,5 +58,6 @@ export default function Layout({
         )}
       </body>
     </html>
+    </SidebarProvider>
   );
 }
