@@ -78,7 +78,7 @@ function parseResponse(content: string): Array<{type: string, content: string, l
 
 export default function Home() {
   const [input, setInput] = useState("");
-  const [showThinking, setShowThinking] = useState(true);
+  const [showThinking, setShowThinking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const player = usePlayer();
   const [suggestions, setSuggestions] = useState<string[]>([]);
