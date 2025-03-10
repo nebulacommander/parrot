@@ -19,6 +19,18 @@ type Message = {
   latency?: number;
 };
 
+type TemplatePrompt = {
+  text: string;
+  icon: React.ReactNode;
+};
+
+const templatePrompts: TemplatePrompt[] = [
+  { text: "Write code", icon: <Code2 size={16} /> },
+  { text: "Explain concept", icon: <Brain size={16} /> },
+  { text: "Search docs", icon: <Search size={16} /> },
+  { text: "Generate text", icon: <MessageSquareText size={16} /> }
+];
+
 function parseResponse(content: string): Array<{type: string, content: string, language?: string}> {
   const parts = [];
   let currentText = '';
@@ -241,17 +253,17 @@ export default function Home() {
 
   const lastAssistantMessage = messages.filter(m => m.role === "assistant").pop();
 
-  const templatePrompts = [
-    { text: "Generate code", icon: <Code2 size={16} /> },
-    { text: "Explain something", icon: <Brain size={16} /> },
-    { text: "Start a chat", icon: <MessageSquareText size={16} /> },
-    { text: "Configure settings", icon: <Settings size={16} /> },
-  ];
-
-  function handleTemplateClick(template: { text: string, icon: React.ReactNode }) {
-    setInput(template.text);
+  function handleTemplateClick(template: TemplatePrompt): void {
+    const prompts = {
+      "Write code": "Write code to ",
+      "Explain concept": "Explain the concept of ",
+      "Search docs": "Find documentation about ",
+      "Generate text": "Generate text for "
+    };
+    
+    const defaultPrompt = prompts[template.text as keyof typeof prompts] || "";
+    setInput(defaultPrompt);
     inputRef.current?.focus();
-    track("Template click", { template: template.text });
   }
 
   return (
