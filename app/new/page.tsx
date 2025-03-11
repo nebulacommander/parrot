@@ -559,6 +559,7 @@ useEffect(() => {
           </div>
         </main>
       </div>
+      <HelpMenu />
     </div>
   );
 }

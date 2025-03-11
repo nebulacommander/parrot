@@ -43,17 +43,18 @@ export function HelpMenu() {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4">
+      <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-full bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-lg border border-neutral-200 dark:border-neutral-800"
-          aria-label="Help"
+          className="p-3 rounded-full bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-lg border border-neutral-200 dark:border-neutral-800"
+          aria-label="Help and keyboard shortcuts"
+          title="Help and keyboard shortcuts"
         >
-          <HelpCircle className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+          <HelpCircle className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
         </button>
 
         {isOpen && (
-          <div className="absolute bottom-12 right-0 w-64 py-2 rounded-lg bg-white dark:bg-neutral-900 shadow-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-800">
+          <div className="absolute bottom-14 right-0 w-72 py-2 rounded-lg bg-white dark:bg-neutral-900 shadow-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-800">
             {helpItems.map((item) => (
               <button
                 key={item.id}
@@ -61,10 +62,10 @@ export function HelpMenu() {
                   setActiveModal(item.id);
                   setIsOpen(false);
                 }}
-                className="w-full px-4 py-2 flex items-center space-x-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 <span className="text-neutral-600 dark:text-neutral-400">{item.icon}</span>
-                <span className="flex-1 text-sm text-left">{item.label}</span>
+                <span className="flex-1 text-sm text-left font-medium">{item.label}</span>
                 <ChevronRight className="w-4 h-4 text-neutral-400" />
               </button>
             ))}
