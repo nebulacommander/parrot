@@ -57,7 +57,7 @@ export function AnimatedLogo() {
         {greeting}, {user?.firstName || 'Friend'}
       </h1>
       <p className="text-lg text-neutral-500 dark:text-neutral-400 animate-fade-in">
-        Let's have a great conversation!
+        Let&apos;s have a great conversation!
       </p>
     </div>
   );
