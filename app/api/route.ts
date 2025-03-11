@@ -38,24 +38,20 @@ function extractThinking(response: string): { thinking: string | null; cleanResp
 }
 
 export async function POST(request: Request) {
-	// console.time("transcribe " + request.headers.get("x-vercel-id") || "local");
-
 	const { data, success } = schema.safeParse(await request.formData());
 	if (!success) return new Response("Invalid request", { status: 400 });
 
 	const transcript = await getTranscript(data.input);
 	if (!transcript) return new Response("Invalid audio", { status: 400 });
 
-	// console.timeEnd(
-	// 	"transcribe " + request.headers.get("x-vercel-id") || "local"
-	// );
-	// console.time(
-	// 	"text completion " + request.headers.get("x-vercel-id") || "local"
-	// );
-
 	try {
-		const completion = await groq.chat.completions.create({
-			model: "deepseek-r1-distill-qwen-32b", // Changed from llama-3.2-90b-vision-preview to Deepseek model
+		const encoder = new TextEncoder();
+		const stream = new TransformStream();
+		const writer = stream.writable.getWriter();
+
+		// Remove await here to start streaming immediately
+		const completion = groq.chat.completions.create({
+			model: "deepseek-r1-distill-qwen-32b",
 			messages: [
 				{
 					role: "system",
@@ -110,76 +106,47 @@ export async function POST(request: Request) {
 					role: "user",
 					content: transcript,
 				},
-			],
+				],
+				stream: true, // Enable streaming
 		});
 
-		const rawResponse = completion.choices[0].message.content;
-		const { thinking, cleanResponse } = extractThinking(rawResponse);
+		 // Start streaming immediately in background
+		(async () => {
+			try {
+				// Await the completion to get the actual stream
+				const completionStream = await completion;
+				for await (const chunk of completionStream) {
+					const content = chunk.choices[0]?.delta?.content || '';
+					if (content) {
+						const payload = JSON.stringify({ type: 'content', content });
+						await writer.write(encoder.encode(`data: ${payload}\n\n`));
+						// Ensure the chunk is flushed immediately
+						await writer.ready;
+					}
+				}
+			} catch (error) {
+				console.error('Streaming error:', error);
+				// Send error through stream instead of aborting
+				const errorPayload = JSON.stringify({ 
+					type: 'error', 
+					content: error instanceof Error ? error.message : 'Streaming error occurred' 
+				});
+				await writer.write(encoder.encode(`data: ${errorPayload}\n\n`));
+			} finally {
+				await writer.close();
+			}
+		})();
 
-		// console.timeEnd(
-		// 	"text completion " + request.headers.get("x-vercel-id") || "local"
-		// );
-
-		// console.time(
-		// 	"cartesia request " + request.headers.get("x-vercel-id") || "local"
-		// );
-
-		// const voice = await fetch("https://api.cartesia.ai/tts/bytes", {
-		// 	method: "POST",
-		// 	headers: {
-		// 		"Cartesia-Version": "2024-06-10",
-		// 		"Content-Type": "application/json",
-		// 		"X-API-Key": process.env.CARTESIA_API_KEY!,
-		// 	},
-		// 	body: JSON.stringify({
-		// 		model_id: "sonic-english",
-		// 		transcript: cleanResponse, // Only send cleaned response without thinking tags to TTS
-		// 		voice: {
-		// 			mode: "id",
-		// 			id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
-		// 		},
-		// 		output_format: {
-		// 			container: "raw",
-		// 			encoding: "pcm_f32le",
-		// 			sample_rate: 24000,
-		// 		},
-		// 	}),
-		// });
-
-		// console.timeEnd(
-		// 	"cartesia request " + request.headers.get("x-vercel-id") || "local"
-		// );
-
-		// if (!voice.ok) {
-		// 	console.error(await voice.text());
-		// 	return new Response("Voice synthesis failed", { status: 500 });
-		// }
-
-		// console.time("stream " + request.headers.get("x-vercel-id") || "local");
-		// after(() => {
-		// 	console.timeEnd(
-		// 		"stream " + request.headers.get("x-vercel-id") || "local"
-		// 	);
-		// });
-
-		// WE WILL ADD BACK LATER: return new Response(voice.body, {
-		// 	headers: {
-		// 		"X-Transcript": encodeURIComponent(transcript),
-		// 		"X-Response": encodeURIComponent(cleanResponse),
-		// 		"X-Thinking": thinking ? encodeURIComponent(thinking) : "", // Add thinking as a header
-		// 	},
-		// });
-		return new Response(JSON.stringify({ 
-			transcript: transcript,
-			response: rawResponse,
-		  }), {
+		return new Response(stream.readable, {
 			headers: {
-			  "Content-Type": "application/json",
-			  "X-Transcript": encodeURIComponent(transcript),
-			  "X-Response": encodeURIComponent(cleanResponse),
-			  "X-Thinking": thinking ? encodeURIComponent(thinking) : "", // Add thinking as a header
+				'Content-Type': 'text/event-stream',
+				'Cache-Control': 'no-cache, no-transform',
+				'Connection': 'keep-alive',
+				'X-Transcript': encodeURIComponent(transcript),
+				'Transfer-Encoding': 'chunked',
 			},
-	});
+		});
+
 	} catch (error) {
 		console.error("AI completion error:", error);
 		return new Response("AI service error", { status: 503 });

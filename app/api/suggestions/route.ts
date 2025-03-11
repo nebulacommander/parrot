@@ -8,24 +8,26 @@ export async function POST(request: Request) {
     const { query } = await request.json();
 
     const completion = await groq.chat.completions.create({
-      model: "gemma2-9b-it",
+      model: "gemma2-9b-it", 
       messages: [
         {
           role: "system",
-          content: "You are an enterprise AI assistant. Generate 3-5 relevant, professional query suggestions based on the user's input. Return only an array of strings."
+          content: "You are an autocomplete system. When user types, predict and complete their current thought or sentence. DO NOT answer questions - only complete the partial input naturally. Example: User: 'What is the capital of' -> Completion: 'What is the capital of France' NOT 'Paris'. Return exactly one string containing just the completion."
         },
         {
-          role: "user",
+          role: "user", 
           content: query
         }
       ],
-      temperature: 0.7,
-      max_tokens: 150,
+      temperature: 0.1, // Lower temperature for more deterministic completions
+      max_tokens: 30,
     });
 
-    const suggestions = JSON.parse(completion.choices[0].message.content || '[]');
-
-    return NextResponse.json({ suggestions });
+    let suggestion = completion.choices[0].message.content || '';
+    // Remove quotes if present
+    suggestion = suggestion.replace(/^["']|["']$/g, '');
+    
+    return NextResponse.json({ suggestions: [suggestion] });
   } catch (error) {
     console.error('Suggestion generation error:', error);
     return NextResponse.json({ suggestions: [] });

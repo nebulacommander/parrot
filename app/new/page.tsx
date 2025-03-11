@@ -13,9 +13,12 @@ import { Command, Search, Wand2, Code2, Brain, MessageSquareText, Settings, Help
 import debounce from 'lodash/debounce';
 import { ChatSidebar } from '../components/sidebar/sidebar';
 import Link from "next/link";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
+
+type MessageRole = "user" | "assistant";
 
 type Message = {
-  role: "user" | "assistant";
+  role: MessageRole;
   content: string;
   thinking?: string;
   latency?: number;
@@ -33,48 +36,48 @@ const templatePrompts: TemplatePrompt[] = [
   { text: "Generate text", icon: <MessageSquareText size={16} /> }
 ];
 
-function parseResponse(content: string): Array<{type: string, content: string, language?: string}> {
-  const parts = [];
-  let currentText = '';
-  const lines = content.split('\n');
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const codeMatch = line.match(/^```(\w+)?$/);
-    
-    if (codeMatch) {
-      // If we have accumulated text, add it
-      if (currentText) {
-        parts.push({ type: 'text', content: currentText.trim() });
-        currentText = '';
-      }
-      
-      // Collect the code block
-      const language = codeMatch[1];
-      let code = '';
-      i++;
-      while (i < lines.length && !lines[i].startsWith('```')) {
-        code += lines[i] + '\n';
-        i++;
-      }
-      
-      parts.push({
-        type: 'code',
-        language: language || 'text',
-        content: code.trim()
-      });
-    } else {
-      currentText += line + '\n';
-    }
-  }
-  
-  // Add any remaining text
-  if (currentText) {
-    parts.push({ type: 'text', content: currentText.trim() });
-  }
-  
-  return parts;
-}
+// function parseResponse(content: string): Array<{ type: string, content: string, language?: string }> {
+//   const parts = [];
+//   let currentText = '';
+//   const lines = content.split('\n');
+
+//   for (let i = 0; i < lines.length; i++) {
+//     const line = lines[i];
+//     const codeMatch = line.match(/^```(\w+)?$/);
+
+//     if (codeMatch) {
+//       // If we have accumulated text, add it
+//       if (currentText) {
+//         parts.push({ type: 'text', content: currentText.trim() });
+//         currentText = '';
+//       }
+
+//       // Collect the code block
+//       const language = codeMatch[1];
+//       let code = '';
+//       i++;
+//       while (i < lines.length && !lines[i].startsWith('```')) {
+//         code += lines[i] + '\n';
+//         i++;
+//       }
+
+//       parts.push({
+//         type: 'code',
+//         language: language || 'text',
+//         content: code.trim()
+//       });
+//     } else {
+//       currentText += line + '\n';
+//     }
+//   }
+
+//   // Add any remaining text
+//   if (currentText) {
+//     parts.push({ type: 'text', content: currentText.trim() });
+//   }
+
+//   return parts;
+// }
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -85,6 +88,67 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState<string>("");
+  const [suggestionTimer, setSuggestionTimer] = useState<NodeJS.Timeout | null>(null);
+  const [streamingContent, setStreamingContent] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+
+
+  // Added keydown handler for tab completion
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Tab" && activeSuggestion) {
+      e.preventDefault();
+      setInput(activeSuggestion);
+      setActiveSuggestion("");
+    }
+  };
+
+  // Modified input change handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+    
+    // Clear suggestion on space
+    if (e.target.value.endsWith(" ")) {
+      setActiveSuggestion("");
+      // Reset timer for next suggestion
+      if (suggestionTimer) {
+        clearTimeout(suggestionTimer);
+        setSuggestionTimer(null);
+      }
+    } else {
+      getSuggestions(e.target.value);
+    }
+  };
+ 
+   // Update renderInput to use new handler
+   function renderInput() {
+    return (
+      <div className="relative w-full">
+        <input 
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Message Parrot..."
+          className="block w-full resize-none border-0 h-10 px-0 py-2 text-token-text-primary placeholder:text-token-text-tertiary focus:outline-none dark:bg-transparent dark:text-neutral-200 dark:placeholder-neutral-400"
+        />
+        {activeSuggestion && (
+          <div className="absolute left-0 top-0 h-full flex items-center pointer-events-none">
+            <span className="opacity-0">{input}</span>
+            <span className="flex items-center text-neutral-400">
+              {activeSuggestion.slice(input.length)}
+              <span className="inline-flex items-center justify-center text-[9px] font-medium ml-1 px-1 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400">
+                TAB
+              </span>
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+   // text-neutral-800 placeholder-neutral-500 bg-transparent border border-neutral-200 rounded-lg focus:outline-none focus:border-primary
 
   const vad = useMicVAD({
     startOnLoad: true,
@@ -118,14 +182,21 @@ export default function Home() {
     },
   });
 
-  const getSuggestions = useCallback(
-    debounce(async (query: string) => {
-      if (!query.trim()) {
-        setSuggestions([]);
-        return;
-      }
+// Modify suggestion handling with delay
+const getSuggestions = useCallback(
+  debounce(async (query: string) => {
+    if (!query.trim()) {
+      setActiveSuggestion("");
+      return;
+    }
 
-      setIsLoading(true);
+    // Clear any existing timer
+    if (suggestionTimer) {
+      clearTimeout(suggestionTimer);
+    }
+
+    // Set new timer for 2 second delay
+    const timer = setTimeout(async () => {
       try {
         const response = await fetch("/api/suggestions", {
           method: "POST",
@@ -135,23 +206,30 @@ export default function Home() {
 
         if (!response.ok) throw new Error("Failed to fetch suggestions");
         const data = await response.json();
-        setSuggestions(data.suggestions);
+        
+        if (data.suggestions?.length > 0) {
+          setActiveSuggestion(data.suggestions[0]);
+        } else {
+          setActiveSuggestion("");
+        }
       } catch (error) {
         console.error("Error fetching suggestions:", error);
-      } finally {
-        setIsLoading(false);
+        setActiveSuggestion("");
       }
-    }, 300),
-    []
-  );
+    }, 1000); // 2 second delay
 
-  useEffect(() => {
-    if (input.trim()) {
-      getSuggestions(input);
-    } else {
-      setSuggestions([]);
+    setSuggestionTimer(timer);
+  }, 200),
+  [suggestionTimer]
+);
+
+useEffect(() => {
+  return () => {
+    if (suggestionTimer) {
+      clearTimeout(suggestionTimer);
     }
-  }, [input, getSuggestions]);
+  };
+}, [suggestionTimer]);
 
   useEffect(() => {
     function keyDown(e: KeyboardEvent) {
@@ -167,85 +245,127 @@ export default function Home() {
     return () => window.removeEventListener("keydown", keyDown);
   }, []);
 
-  const [messages, submit, isPending] = useActionState<
-    Array<Message>,
-    string | Blob
-  >(async (prevMessages, data) => {
-    try {
-      const formData = new FormData();
+  const [messages, submit, isPending] = useActionState<Message[], string | Blob>(
+    async (prevMessages, data) => {
+      try {
+        const formData = new FormData();
 
-      if (typeof data === "string") {
-        formData.append("input", data);
-        track("Text input");
-      } else {
-        formData.append("input", data, "audio.wav");
-        track("Speech input");
-      }
-
-      for (const message of prevMessages) {
-        formData.append("message", JSON.stringify({
-          role: message.role,
-          content: message.content
-        }));
-      }
-
-      const submittedAt = Date.now();
-
-      const response = await fetch("/api", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok || !response.body) {
-        if (response.status === 429) {
-          toast.error("Too many requests. Please try again later.");
+        if (typeof data === "string") {
+          formData.append("input", data);
+          track("Text input");
         } else {
-          toast.error((await response.text()) || "An error occurred.");
+          formData.append("input", data, "audio.wav");
+          track("Speech input");
         }
+
+        for (const message of prevMessages) {
+          formData.append(
+            "message",
+            JSON.stringify({
+              role: message.role,
+              content: message.content,
+            })
+          );
+        }
+
+        const submittedAt = Date.now();
+
+        const response = await fetch("/api", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok || !response.body) {
+          if (response.status === 429) {
+            toast.error("Too many requests. Please try again later.");
+          } else {
+            toast.error((await response.text()) || "An error occurred.");
+          }
+          return prevMessages;
+        }
+
+        const transcript = decodeURIComponent(
+          response.headers.get("X-Transcript") || ""
+        );
+
+        // Remove the text and thinking checks since we're streaming
+        setInput(transcript);
+        setIsStreaming(true);
+        setStreamingContent("");
+
+        // Add the user message immediately with explicit type
+        const newMessages: Message[] = [
+          ...prevMessages,
+          {
+            role: "user" as const,
+            content: transcript,
+          },
+        ];
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let currentThinking = '';
+        let isThinking = false;
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.type === 'content') {
+                    if (data.content.includes('<think>')) {
+                      isThinking = true;
+                      continue;
+                    }
+                    if (data.content.includes('</think>')) {
+                      isThinking = false;
+                      continue;
+                    }
+
+                    if (isThinking) {
+                      currentThinking += data.content;
+                    } else {
+                      fullContent += data.content;
+                      setStreamingContent(fullContent);
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error parsing SSE data:', e);
+                }
+              }
+            }
+          }
+        } finally {
+          setIsStreaming(false);
+          // Add the complete assistant message with explicit type
+          if (fullContent.trim()) {
+            newMessages.push({
+              role: "assistant" as const,
+              content: fullContent,
+              thinking: currentThinking,
+              latency: Date.now() - submittedAt,
+            });
+          }
+        }
+
+        return newMessages;
+
+      } catch (error) {
+        console.error("Error processing request:", error);
+        toast.error("Something went wrong. Please try again.");
         return prevMessages;
       }
-
-      const transcript = decodeURIComponent(
-        response.headers.get("X-Transcript") || ""
-      );
-      const text = decodeURIComponent(
-        response.headers.get("X-Response") || ""
-      );
-      const thinking = response.headers.get("X-Thinking")
-        ? decodeURIComponent(response.headers.get("X-Thinking") || "")
-        : undefined;
-
-      if (!transcript || !text) {
-        toast.error("Invalid response from server");
-        return prevMessages;
-      }
-
-      const latency = Date.now() - submittedAt;
-      player.play(response.body, () => {
-        const isFirefox = navigator.userAgent.includes("Firefox");
-        if (isFirefox) vad.start();
-      });
-      setInput(transcript);
-
-      return [
-        ...prevMessages,
-        {
-          role: "user",
-          content: transcript,
-        },
-        {
-          role: "assistant",
-          content: text,
-          thinking,
-          latency,
-        },
-      ];
-    } catch (error) {
-      console.error("Error processing request:", error);
-      toast.error("Something went wrong. Please try again.");
-      return prevMessages;
-    }
-  }, []);
+    },
+    []
+  );
 
   function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -263,7 +383,7 @@ export default function Home() {
       "Search docs": "Find documentation about ",
       "Generate text": "Generate text for "
     };
-    
+
     const defaultPrompt = prompts[template.text as keyof typeof prompts] || "";
     setInput(defaultPrompt);
     inputRef.current?.focus();
@@ -272,17 +392,17 @@ export default function Home() {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-neutral-100 dark:bg-black">
       {sidebarOpen && <ChatSidebar onClose={() => setSidebarOpen(false)} />}
-      
+
       <div className="flex h-full w-full flex-col">
         <header className="flex items-center justify-between p-3 bg-neutral-100 dark:bg-black">
           <div className="flex items-center gap-0">
-            <button 
+            <button
               onClick={() => setSidebarOpen(true)}
               className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800"
             >
               <MenuIcon className="h-6 w-6" />
             </button>
-            
+
             <Link href="/new">
               <button className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800">
                 <Pen className="h-6 w-6" />
@@ -326,7 +446,7 @@ export default function Home() {
                         Hide
                       </button>
                     </div>
-                    <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
+                    <p className="thinking-text">
                       {lastAssistantMessage.thinking}
                     </p>
                   </div>
@@ -351,14 +471,22 @@ export default function Home() {
                     Show thinking
                   </button>
                 )}
+
+                {isStreaming && (
+                  <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                    <div className="prose dark:prose-invert">
+                      <p className="streaming-text">
+                        {streamingContent}
+                        <span className="typing-cursor">|</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="w-full max-w-3xl px-4 flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="text-center space-y-2 mb-8">
-                  <h1 className="text-2xl font-bold">Parrot</h1>
-                  <p className="text-neutral-500 dark:text-neutral-400">
-                    Powered by Deepseek AI + Groq
-                  </p>
+                  <AnimatedLogo />
                 </div>
 
                 <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -381,7 +509,7 @@ export default function Home() {
             <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
               <div className="w-full">
                 <div className="flex justify-center empty:hidden"></div>
-                <form 
+                <form
                   onSubmit={handleFormSubmit}
                   className="w-full"
                 >
@@ -393,30 +521,26 @@ export default function Home() {
                             <div className="flex min-h-[44px] items-start pl-1">
                               <div className="min-w-0 max-w-full flex-1">
                                 <div className="max-h-[25dvh] max-h-52 overflow-auto">
-                                  <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Message Parrot..."
-                                    className="block h-10 w-full resize-none border-0 bg-transparent px-0 py-2 text-token-text-primary placeholder:text-token-text-tertiary focus:outline-none"
-                                  />
+                                 {renderInput()}
                                 </div>
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="mb-2 mt-1 flex items-center justify-between sm:mt-5">
                             <div className="flex gap-x-1.5">
-                              <button className="flex h-9 w-9 items-center justify-center rounded-full border border-token-border-light text-token-text-secondary hover:bg-token-main-surface-secondary dark:hover:bg-gray-700">
+                              <button
+                                type="button"
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-token-border-light text-token-text-secondary hover:bg-token-main-surface-secondary dark:hover:bg-gray-700"
+                              >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]">
-                                  <path fillRule="evenodd" clipRule="evenodd" d="M12 3C12.5523 3 13 3.44772 13 4L13 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13L13 13L13 20C13 20.5523 12.5523 21 12 21C11.4477 21 11 20.5523 11 20L11 13L4 13C3.44772 13 3 12.5523 3 12C3 11.4477 3.44772 11 4 11L11 11L11 4C11 3.44772 11.4477 3 12 3Z" fill="currentColor"/>
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M12 3C12.5523 3 13 3.44772 13 4L13 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13L13 13L13 20C13 20.5523 12.5523 21 12 21C11.4477 21 11 20.5523 11 20L11 13L4 13C3.44772 13 3 12.5523 3 12C3 11.4477 3.44772 11 4 11L11 11L11 4C11 3.44772 11.4477 3 12 3Z" fill="currentColor" />
                                 </svg>
                               </button>
                             </div>
-                            
+
                             <div className="flex gap-x-1.5">
-                              <button 
+                              <button
                                 type="submit"
                                 disabled={isPending}
                                 className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black text-white transition-colors hover:opacity-70 disabled:opacity-30 dark:bg-white dark:text-black"

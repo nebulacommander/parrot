@@ -5,6 +5,7 @@ import clsx from "clsx";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
+import { inter, jetbrains, manrope, sora } from '@/lib/fonts'
 
 export const metadata: Metadata = {
 	title: "parrot Enterprise AI Assistant",
@@ -36,6 +37,10 @@ export default function RootLayout({
 		<html lang="en">
 			<body
 				className={clsx(
+					inter.variable,
+					jetbrains.variable,
+					manrope.variable,
+					sora.variable,
 					GeistSans.variable,
 					GeistMono.variable,
 					"py-8 px-6 lg:p-10 dark:text-white bg-white dark:bg-black min-h-dvh flex flex-col justify-between antialiased font-sans select-none"
