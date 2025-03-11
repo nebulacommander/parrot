@@ -6,6 +6,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { inter, jetbrains, manrope, sora } from '@/lib/fonts'
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
 	title: "parrot Enterprise AI Assistant",
@@ -43,13 +44,19 @@ export default function RootLayout({
 					sora.variable,
 					GeistSans.variable,
 					GeistMono.variable,
-					"py-8 px-6 lg:p-10 dark:text-white bg-white dark:bg-black min-h-dvh flex flex-col justify-between antialiased font-sans select-none"
+					"py-8 px-6 lg:p-10 text-white bg-background min-h-dvh flex flex-col justify-between antialiased font-sans select-none overflow-hidden"
 				)}
 			>
-				<main className="flex flex-col items-center justify-center grow">
-					{children}
-				</main>
-
+				 <ThemeProvider
+					attribute="class"
+					defaultTheme="dark"
+					enableSystem={false}
+					disableTransitionOnChange
+				>
+					<main className="flex flex-col items-center justify-center grow">
+						{children}
+					</main>
+				</ThemeProvider>
 				<Toaster richColors theme="system" />
 				<Analytics />
 			</body>

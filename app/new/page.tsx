@@ -390,39 +390,34 @@ useEffect(() => {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="fixed inset-0 flex bg-background overflow-hidden">
       {sidebarOpen && <ChatSidebar onClose={() => setSidebarOpen(false)} />}
 
       <div className="flex h-full w-full flex-col">
-        <header className="flex items-center justify-between p-3 bg-background">
-          <div className="flex items-center gap-0">
+        <header className="flex items-center justify-between border-b border-border p-3 bg-background">
+          {/* Left header content */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="h-10 rounded-lg px-2 hover:bg-secondary"
+              className="h-10 rounded-lg px-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <MenuIcon className="h-6 w-6" />
+              <MenuIcon className="h-5 w-5 text-foreground" />
             </button>
 
-            <Link href="/new">
-              <button className="h-10 rounded-lg px-2 hover:bg-secondary">
-                <Pen className="h-6 w-6" />
-              </button>
-            </Link>
-
-            {/* Model switcher button */}
-            <button className="group flex items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-secondary">
-              <span>Parrot AI</span>
+            <button className="flex items-center gap-2 rounded-lg px-4 py-2 text-lg font-medium hover:bg-muted">
+              Parrot AI
               <ChevronDown className="h-4 w-4 opacity-50" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 pr-1">
+          {/* Right header content */}
+          <div className="flex items-center gap-4">
             <SignedIn>
               <UserButton afterSignOutUrl="/sign-in" />
             </SignedIn>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                <button className="rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90">
                   Sign in
                 </button>
               </SignInButton>
@@ -430,127 +425,98 @@ useEffect(() => {
           </div>
         </header>
 
-        <main className="relative flex-1 overflow-hidden">
-          <div className="relative h-full w-full flex flex-col items-center pt-0">
-            {messages.length > 0 ? (
-              <div className="w-full max-w-3xl px-4 py-4 space-y-6">
-                {lastAssistantMessage?.thinking && showThinking && (
-                  <div className="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                    <div className="flex items-center mb-2">
-                      <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-                      <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Thinking</h3>
-                      <button
-                        onClick={() => setShowThinking(false)}
-                        className="ml-auto text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                      >
-                        Hide
-                      </button>
+        <main className="flex-1 overflow-hidden relative">
+          <div className="absolute inset-0 flex flex-col items-center">
+            <div className="w-full max-w-3xl h-full content-scroll">
+              {messages.length > 0 ? (
+                <div className="w-full max-w-3xl space-y-6 p-4">
+                  {/* Thinking section */}
+                  {lastAssistantMessage?.thinking && showThinking && (
+                    <div className="rounded-lg border border-border bg-muted p-4">
+                      <div className="mb-2 flex items-center">
+                        <div className="mr-2 h-2 w-2 animate-pulse rounded-full bg-primary"></div>
+                        <h3 className="text-sm font-medium text-muted-foreground">Processing</h3>
+                        <button
+                          onClick={() => setShowThinking(false)}
+                          className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Hide
+                        </button>
+                      </div>
+                      <pre className="text-sm font-mono text-muted-foreground whitespace-pre-wrap">
+                        {lastAssistantMessage.thinking}
+                      </pre>
                     </div>
-                    <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
-                      {lastAssistantMessage.thinking}
-                    </p>
-                  </div>
-                )}
+                  )}
 
-                <div className="p-4 bg-background border-border rounded-lg">
-                  <div className="prose dark:prose-invert">
-                    {lastAssistantMessage?.content}
+                  {/* Message content */}
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="prose dark:prose-invert max-w-none">
+                      {lastAssistantMessage?.content}
+                    </div>
+                    {lastAssistantMessage?.latency && (
+                      <span className="mt-2 block text-xs font-mono text-muted-foreground">
+                        Response time: {lastAssistantMessage.latency}ms
+                      </span>
+                    )}
                   </div>
-                  {lastAssistantMessage?.latency && (
-                    <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 mt-2 block">
-                      Response time: {lastAssistantMessage?.latency}ms
-                    </span>
+
+                  {/* Streaming content */}
+                  {isStreaming && (
+                    <div className="rounded-lg border border-border bg-card p-4">
+                      <div className="prose dark:prose-invert">
+                        <p className="streaming-text">
+                          {streamingContent}
+                          <span className="typing-cursor"></span>
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
-
-                {!showThinking && lastAssistantMessage?.thinking && (
-                  <button
-                    onClick={() => setShowThinking(true)}
-                    className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                  >
-                    Show thinking
-                  </button>
-                )}
-
-                {isStreaming && (
-                  <div className="p-4 bg-background border-border rounded-lg">
-                    <div className="prose dark:prose-invert">
-                      <p className="streaming-text">
-                        {streamingContent}
-                        <span className="typing-cursor">|</span>
-                      </p>
-                    </div>
+              ) : (
+                // Empty state
+                <div className="flex min-h-[60vh] w-full max-w-3xl flex-col items-center justify-center px-4">
+                  <div className="mb-8 text-center">
+                    <AnimatedLogo />
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="w-full max-w-3xl px-4 flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="text-center space-y-2 mb-8">
-                  <AnimatedLogo />
+
+                  {/* Template buttons */}
+                  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-4">
+                    {templatePrompts.map((template) => (
+                      <button
+                        key={template.text}
+                        onClick={() => handleTemplateClick(template)}
+                        className="flex items-center gap-2 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted"
+                      >
+                        <span className="text-muted-foreground">{template.icon}</span>
+                        <span className="truncate text-sm">{template.text}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  {templatePrompts.map((template) => (
-                    <button
-                      key={template.text}
-                      onClick={() => handleTemplateClick(template)}
-                      className="flex items-center gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
-                    >
-                      <span className="text-neutral-500 dark:text-neutral-400">
-                        {template.icon}
-                      </span>
-                      <span className="text-sm truncate">{template.text}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
-              <div className="w-full">
-                <div className="flex justify-center empty:hidden"></div>
-                <form
-                  onSubmit={handleFormSubmit}
-                  className="w-full"
-                >
-                  <div className="relative z-[1] flex h-full max-w-full flex-1 flex-col">
-                    <div className="group relative z-[1] flex w-full items-center">
-                      <div className="w-full">
-                        <div className="flex w-full cursor-text flex-col rounded-3xl border border-token-border-light px-3 py-1 duration-150 ease-in-out bg-token-main-surface-primary dark:bg-[#303030] dark:border-none shadow-[0_9px_9px_0px_rgba(0,0,0,0.01),_0_2px_5px_0px_rgba(0,0,0,0.06)] has-[:focus]:shadow-[0_2px_12px_0px_rgba(0,0,0,0.04),_0_9px_9px_0px_rgba(0,0,0,0.01),_0_2px_5px_0px_rgba(0,0,0,0.06)]">
-                          <div className="flex flex-col justify-start min-h-0">
-                            <div className="flex min-h-[44px] items-start pl-1">
-                              <div className="min-w-0 max-w-full flex-1">
-                                <div className="max-h-[25dvh] max-h-52 overflow-auto">
-                                 {renderInput()}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mb-2 mt-1 flex items-center justify-between sm:mt-5">
-                            <div className="flex gap-x-1.5">
-                              <button
-                                type="button"
-                                className="flex h-9 w-9 items-center justify-center rounded-full border border-token-border-light text-token-text-secondary hover:bg-token-main-surface-secondary dark:hover:bg-gray-700"
-                              >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]">
-                                  <path fillRule="evenodd" clipRule="evenodd" d="M12 3C12.5523 3 13 3.44772 13 4L13 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13L13 13L13 20C13 20.5523 12.5523 21 12 21C11.4477 21 11 20.5523 11 20L11 13L4 13C3.44772 13 3 12.5523 3 12C3 11.4477 3.44772 11 4 11L11 11L11 4C11 3.44772 11.4477 3 12 3Z" fill="currentColor" />
-                                </svg>
-                              </button>
-                            </div>
-
-                            <div className="flex gap-x-1.5">
-                              <button
-                                type="submit"
-                                disabled={isPending}
-                                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-black text-white transition-colors hover:opacity-70 disabled:opacity-30 dark:bg-white dark:text-black"
-                              >
-                                {isPending ? <LoadingIcon /> : <EnterIcon />}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+              {/* Input section */}
+              <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
+                <form onSubmit={handleFormSubmit} className="mx-auto max-w-3xl px-4">
+                  <div className="relative rounded-lg border border-border bg-card shadow-sm">
+                    <div className="min-h-[44px] p-2">
+                      {renderInput()}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-border p-2">
+                      <button
+                        type="button"
+                        className="rounded-full p-2 hover:bg-muted"
+                      >
+                        <PlusIcon className="h-5 w-5 text-muted-foreground" />
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isPending}
+                        className="rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {isPending ? <LoadingIcon /> : <EnterIcon />}
+                      </button>
                     </div>
                   </div>
                 </form>
@@ -558,6 +524,10 @@ useEffect(() => {
             </div>
           </div>
         </main>
+
+        <div className="sticky bottom-0 w-full bg-gradient-to-t from-background to-transparent pt-6">
+          {/* ...existing input form code... */}
+        </div>
       </div>
       <HelpMenu />
     </div>
