@@ -446,7 +446,7 @@ useEffect(() => {
                         Hide
                       </button>
                     </div>
-                    <p className="thinking-text">
+                    <p className="text-sm whitespace-pre-line text-neutral-700 dark:text-neutral-300 font-mono">
                       {lastAssistantMessage.thinking}
                     </p>
                   </div>
@@ -477,7 +477,7 @@ useEffect(() => {
                     <div className="prose dark:prose-invert">
                       <p className="streaming-text">
                         {streamingContent}
-                        <span className="typing-cursor">|</span>
+                        <span className="typing-cursor"></span>
                       </p>
                     </div>
                   </div>
