@@ -390,27 +390,27 @@ useEffect(() => {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-neutral-100 dark:bg-black">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       {sidebarOpen && <ChatSidebar onClose={() => setSidebarOpen(false)} />}
 
       <div className="flex h-full w-full flex-col">
-        <header className="flex items-center justify-between p-3 bg-neutral-100 dark:bg-black">
+        <header className="flex items-center justify-between p-3 bg-background">
           <div className="flex items-center gap-0">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+              className="h-10 rounded-lg px-2 hover:bg-secondary"
             >
               <MenuIcon className="h-6 w-6" />
             </button>
 
             <Link href="/new">
-              <button className="h-10 rounded-lg px-2 hover:bg-neutral-200 dark:hover:bg-neutral-800">
+              <button className="h-10 rounded-lg px-2 hover:bg-secondary">
                 <Pen className="h-6 w-6" />
               </button>
             </Link>
 
             {/* Model switcher button */}
-            <button className="group flex items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-neutral-200 dark:hover:bg-neutral-800">
+            <button className="group flex items-center gap-1 rounded-lg py-1.5 px-3 text-lg hover:bg-secondary">
               <span>Parrot AI</span>
               <ChevronDown className="h-4 w-4 opacity-50" />
             </button>
@@ -452,7 +452,7 @@ useEffect(() => {
                   </div>
                 )}
 
-                <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 bg-background border-border rounded-lg">
                   <div className="prose dark:prose-invert">
                     {lastAssistantMessage?.content}
                   </div>
@@ -473,11 +473,11 @@ useEffect(() => {
                 )}
 
                 {isStreaming && (
-                  <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <div className="p-4 bg-background border-border rounded-lg">
                     <div className="prose dark:prose-invert">
                       <p className="streaming-text">
                         {streamingContent}
-                        <span className="typing-cursor"></span>
+                        <span className="typing-cursor">|</span>
                       </p>
                     </div>
                   </div>
