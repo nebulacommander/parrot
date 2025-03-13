@@ -1,16 +1,33 @@
-# parrot Voice Assistant Technical Documentation
+# parrot v2.0.0 Technical Documentation
 
 ## Overview
-parrot is an advanced voice assistant application that combines real-time speech processing with AI-powered responses. The application leverages cutting-edge technologies including Groq for AI processing, Cartesia for enhancement, and Voice Activity Detection (VAD) for speech recognition.
+parrot is a cutting-edge voice assistant that integrates real-time speech processing with advanced AI capabilities. Built on a modern tech stack, it leverages Groq for AI processing, Cartesia for voice enhancement, and state-of-the-art Voice Activity Detection (VAD) for speech recognition.
 
 ## Technical Architecture
 
 ### Core Technologies
-- Frontend: React (Next.js)
+- Frontend: React 19 + Next.js 15
 - Speech Processing: Voice Activity Detection (VAD)
 - AI Processing: Deepseek AI + Groq
+- Authentication: Clerk
 - Deployment: Vercel
 - Analytics: Vercel Analytics
+
+### Key Features
+1. **Streaming Responses**
+   - Real-time content streaming
+   - Progressive rendering
+   - Low-latency feedback
+
+2. **Smart Suggestions**
+   - Context-aware input suggestions
+   - Template-based prompts
+   - Intelligent auto-completion
+
+3. **Enhanced Security**
+   - Clerk authentication integration
+   - Secure API communication
+   - Rate limiting protection
 
 ### Key Components
 
@@ -174,10 +191,11 @@ numThreads: isSafari ? 1 : 4
 
 ## Version Information
 
-- Current Version: 1.0.0
+- Current Version: 2.0.0
 - Last Updated: [Current Date]
 - Dependencies:
   - @ricky0123/vad-react
   - @vercel/analytics
   - sonner
   - clsx
+  - Clerk

@@ -1,4 +1,18 @@
-# parrot Voice Assistant: User Guide
+# parrot v2.0.0: User Guide
+
+## What's New in 2.0.0?
+
+### Smart Features
+- **Intelligent Suggestions**: As you type, parrot suggests relevant completions
+- **Template Prompts**: Quick-access templates for common requests
+- **Real-time Responses**: See responses as they're generated
+- **Dark/Light Modes**: Choose your preferred theme
+
+### Improved Experience
+- Faster response times
+- More natural conversations
+- Better mobile experience
+- Seamless authentication
 
 ## What is parrot?
 
