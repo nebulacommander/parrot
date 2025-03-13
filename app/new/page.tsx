@@ -36,48 +36,6 @@ const templatePrompts: TemplatePrompt[] = [
   { text: "Generate text", icon: <MessageSquareText size={16} /> }
 ];
 
-// function parseResponse(content: string): Array<{ type: string, content: string, language?: string }> {
-//   const parts = [];
-//   let currentText = '';
-//   const lines = content.split('\n');
-
-//   for (let i = 0; i < lines.length; i++) {
-//     const line = lines[i];
-//     const codeMatch = line.match(/^```(\w+)?$/);
-
-//     if (codeMatch) {
-//       // If we have accumulated text, add it
-//       if (currentText) {
-//         parts.push({ type: 'text', content: currentText.trim() });
-//         currentText = '';
-//       }
-
-//       // Collect the code block
-//       const language = codeMatch[1];
-//       let code = '';
-//       i++;
-//       while (i < lines.length && !lines[i].startsWith('```')) {
-//         code += lines[i] + '\n';
-//         i++;
-//       }
-
-//       parts.push({
-//         type: 'code',
-//         language: language || 'text',
-//         content: code.trim()
-//       });
-//     } else {
-//       currentText += line + '\n';
-//     }
-//   }
-
-//   // Add any remaining text
-//   if (currentText) {
-//     parts.push({ type: 'text', content: currentText.trim() });
-//   }
-
-//   return parts;
-// }
 
 export default function Home() {
   const [input, setInput] = useState("");

@@ -28,9 +28,10 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)"],
-        mono: ["var(--font-jetbrains-mono)"],
-        display: ["var(--font-manrope)"],
+        sans: ['Open Sans', 'sans-serif'],
+        mono: ['Roboto Mono', 'monospace'],
+        display: ['Lato', 'sans-serif'],
+        body: ['Roboto', 'sans-serif'],
       },
       typography: {
         DEFAULT: {
@@ -57,7 +58,7 @@ const config: Config = {
               margin: '1.5rem 0'
             },
             'pre code': {
-              'font-family': 'var(--font-geist-mono)',
+              'font-family': 'Roboto Mono, monospace',
               'font-size': '0.875rem',
               'line-height': '1.6'
             },
@@ -130,7 +131,6 @@ const config: Config = {
       },
       colors: {
         border: "var(--border)",
-        input: "var(--input)",
         ring: "var(--ring)",
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -163,6 +163,18 @@ const config: Config = {
           200: "#242423",
           300: "#212121",
         },
+        greeting: {
+          DEFAULT: '#87a9ff',
+          glow: 'rgba(135, 169, 255, 0.15)'
+        },
+        input: {
+          dark: '#0c0e11',
+          light: '#ffffff',
+          border: {
+            dark: '#2f3133',
+            light: '#c6c6c9'
+          }
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

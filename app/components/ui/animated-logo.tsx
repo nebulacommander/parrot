@@ -52,12 +52,12 @@ export function AnimatedLogo() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4">
-      <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-gradient tracking-tight">
-        {greeting}, {user?.firstName || 'Friend'}
+    <div className="greeting-container">
+      <h1 className="greeting-text">
+        {greeting} {user?.firstName || 'Friend'}
       </h1>
-      <p className="text-lg text-neutral-500 dark:text-neutral-400 animate-fade-in">
-        Let&apos;s have a great conversation!
+      <p className="help-text">
+        What can I help with?
       </p>
     </div>
   );

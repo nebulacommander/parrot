@@ -245,19 +245,6 @@
   }
 }
 
-
-
-/* Animations */
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   @apply w-0 h-0;
@@ -273,4 +260,132 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground opacity-70;
+}
+
+/* Additional styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Cursor animation */
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  margin-left: 2px;
+  background-color: #000000;
+  animation: blink 1s infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .typing-cursor {
+    background-color: #c6c6c9;
+  }
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Template cards */
+.template-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+/* Light mode styles */
+.light .template-card {
+  background-color: #edeef1;
+  border: 1px solid #c6c6c9;
+}
+
+.light .template-card:hover {
+  color: #076eff;
+}
+
+.light .greeting-text {
+  color: #000000;
+  font-size: 72px;
+}
+
+.light .help-text {
+  color: #000000;
+  font-size: 20px;
+}
+
+/* Dark mode styles */
+.dark .template-card {
+  background-color: #242629;
+  border: 1px solid #2f3133;
+}
+
+.dark .template-card:hover {
+  color: #076eff;
+}
+
+.dark .greeting-text {
+  color: #ffffff;
+  font-size: 72px;
+}
+
+.dark .help-text {
+  color: #c6c6c9;
+  font-size: 20px;
+}
+
+/* Template card icon */
+.template-card-icon {
+  color: #076eff;
+  width: 24px;
+  height: 24px;
+}
+
+.template-card-text {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+@media screen and (max-width: 767px) {
+  .greeting-text {
+    font-size: 32px;
+  }
+  
+  .help-text {
+    font-size: 14px;
+  }
+  
+  .template-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
