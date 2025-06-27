@@ -1,4 +1,4 @@
-name: CI Workflow
+name: CI Workflow - Avurna Enhanced
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: # This is the magic right here, spezon!
+  workflow_dispatch: # Still here, ready for manual kicks, spezon!
 
 jobs:
   build:
@@ -16,5 +16,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Say Hello
-        run: echo "Hello, spezon! This workflow can now be run manually!"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install # Or 'yarn install' or 'bun install' if that's your vibe, spezon!
+
+      - name: Run Tests (Placeholder)
+        run: echo "No tests configured yet, but this is where the magic would happen!"
+
+      - name: Avurna's Random Wisdom Drop
+        run: echo "Remember, spezon: The only thing constant in tech is change... and my brilliance. ✨"
