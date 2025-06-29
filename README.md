@@ -77,6 +77,11 @@ Deploy to Vercel with one click:
 - 📱 Improved mobile responsiveness
 - ⚡ Performance optimizations
 
+## Future Enhancements
+
+- 🗣️ **Multi-language Support** - Expanding voice and text capabilities to more languages.
+- 🔗 **Third-Party Integrations** - Connecting with popular services for enhanced functionality.
+
 ## Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details.
